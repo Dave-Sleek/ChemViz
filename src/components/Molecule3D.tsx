@@ -1,9 +1,10 @@
-import { Suspense, useMemo, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { Suspense, useMemo, useRef, useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, Stars, Stage, Center, Html, PerspectiveCamera, OrthographicCamera } from '@react-three/drei';
 import { type ConformerData } from '../types';
-import { getElementColor } from '../utils/chemistry';
+import { getElementColor, getAtomicNumber } from '../utils/chemistry';
 import * as THREE from 'three';
+import { motion } from 'motion/react';
 
 interface Molecule3DProps {
   structure: ConformerData;
@@ -29,6 +30,7 @@ export const Molecule3D = forwardRef<Molecule3DHandle, Molecule3DProps>(({
 }, ref) => {
   const controlsRef = useRef<any>(null);
   const snapshotRef = useRef<any>(null);
+  const [hoveredAtom, setHoveredAtom] = useState<{ element: string, x: number, y: number, z: number } | null>(null);
 
   useImperativeHandle(ref, () => ({
     resetCamera: () => {
@@ -76,6 +78,7 @@ export const Molecule3D = forwardRef<Molecule3DHandle, Molecule3DProps>(({
                 structure={structure} 
                 showBondLengths={showBondLengths}
                 showBondAngles={showBondAngles}
+                onHoverAtom={setHoveredAtom}
               />
             </Center>
           </Stage>
@@ -92,6 +95,22 @@ export const Molecule3D = forwardRef<Molecule3DHandle, Molecule3DProps>(({
           <Stars radius={100} depth={50} count={1000} factor={4} saturation={0} fade speed={1} />
           
           <SnapshotHandler ref={snapshotRef} />
+
+          {hoveredAtom && (
+            <Html position={[hoveredAtom.x, hoveredAtom.y + 0.5, hoveredAtom.z]} center distanceFactor={10} pointerEvents="none">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="bg-[#161B22]/95 backdrop-blur-md border border-white/10 rounded-lg p-2 shadow-2xl flex flex-col items-center min-w-[60px]"
+              >
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getElementColor(hoveredAtom.element) }} />
+                  <span className="text-white font-black text-xs">{hoveredAtom.element}</span>
+                </div>
+                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Atomic: {getAtomicNumber(hoveredAtom.element)}</span>
+              </motion.div>
+            </Html>
+          )}
         </Canvas>
       </Suspense>
 
@@ -133,11 +152,13 @@ const SnapshotHandler = forwardRef((_props, ref) => {
 function MoleculeContent({ 
   structure, 
   showBondLengths,
-  showBondAngles 
+  showBondAngles,
+  onHoverAtom
 }: { 
   structure: ConformerData;
   showBondLengths: boolean;
   showBondAngles: boolean;
+  onHoverAtom: (atom: { element: string, x: number, y: number, z: number } | null) => void;
 }) {
   const atomsByElement = useMemo(() => {
     const groups: Record<string, typeof structure.atoms> = {};
@@ -195,7 +216,13 @@ function MoleculeContent({
   return (
     <group>
       {Object.entries(atomsByElement).map(([element, atoms]) => (
-        <AtomInstances key={element} element={element} atoms={atoms} />
+        <AtomInstances 
+          key={element} 
+          element={element} 
+          atoms={atoms} 
+          onHover={(atom) => onHoverAtom(atom)}
+          onHoverOut={() => onHoverAtom(null)}
+        />
       ))}
 
       <BondInstances structure={structure} showBondLengths={showBondLengths} />
@@ -211,7 +238,17 @@ function MoleculeContent({
   );
 }
 
-function AtomInstances({ element, atoms }: { element: string, atoms: ConformerData['atoms'] }) {
+function AtomInstances({ 
+  element, 
+  atoms,
+  onHover,
+  onHoverOut
+}: { 
+  element: string, 
+  atoms: ConformerData['atoms'],
+  onHover: (atom: { element: string, x: number, y: number, z: number }) => void,
+  onHoverOut: () => void
+}) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const radius = getElementRadius(element);
   const color = getElementColor(element);
@@ -228,7 +265,23 @@ function AtomInstances({ element, atoms }: { element: string, atoms: ConformerDa
   }, [atoms]);
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, atoms.length]} castShadow receiveShadow>
+    <instancedMesh 
+      ref={meshRef} 
+      args={[undefined, undefined, atoms.length]} 
+      castShadow 
+      receiveShadow
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        if (e.instanceId !== undefined) {
+          const atom = atoms[e.instanceId];
+          if (atom) onHover({ element, x: atom.x, y: atom.y, z: atom.z });
+        }
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation();
+        onHoverOut();
+      }}
+    >
       <sphereGeometry args={[radius, ATOM_DETAIL, ATOM_DETAIL]} />
       <meshStandardMaterial 
         color={color} 

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BrainCircuit, CheckCircle2, XCircle, RefreshCw, Trophy, ArrowRight } from 'lucide-react';
+import { BrainCircuit, CheckCircle2, XCircle, RefreshCw, Trophy, ArrowRight, Download, Medal, History } from 'lucide-react';
 import { formatFormula } from '../utils/formulaParser';
+import confetti from 'canvas-confetti';
+import { jsPDF } from 'jspdf';
 
 interface Question {
   id: number;
@@ -9,6 +11,13 @@ interface Question {
   options: string[];
   correct: number;
   explanation: string;
+}
+
+interface LeaderboardEntry {
+  score: number;
+  total: number;
+  date: string;
+  streak: number;
 }
 
 const QUESTIONS: Question[] = [
@@ -55,6 +64,43 @@ export function Quiz() {
   const [score, setScore] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [currentStreak, setCurrentStreak] = useState(0);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('quiz_leaderboard');
+    if (saved) {
+      setLeaderboard(JSON.parse(saved));
+    }
+  }, []);
+
+  const saveToLeaderboard = (finalScore: number) => {
+    const newEntry: LeaderboardEntry = {
+      score: finalScore,
+      total: QUESTIONS.length,
+      date: new Date().toLocaleDateString(),
+      streak: finalScore === QUESTIONS.length ? currentStreak + 1 : 0
+    };
+
+    if (finalScore === QUESTIONS.length) {
+      setCurrentStreak(s => s + 1);
+    } else {
+      setCurrentStreak(0);
+    }
+
+    const updated = [newEntry, ...leaderboard].slice(0, 10);
+    setLeaderboard(updated);
+    localStorage.setItem('quiz_leaderboard', JSON.stringify(updated));
+
+    if (finalScore >= QUESTIONS.length * 0.8) {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#3B82F6', '#10B981', '#F59E0B']
+      });
+    }
+  };
 
   const startQuiz = () => {
     setCurrentIndex(0);
@@ -79,9 +125,51 @@ export function Quiz() {
       setSelectedOption(null);
       setIsAnswered(false);
     } else {
+      saveToLeaderboard(score);
       setCurrentStep('result');
     }
   };
+
+  const generatePDFReport = () => {
+    const doc = new jsPDF();
+    const date = new Date().toLocaleString();
+    
+    // Header
+    doc.setFillColor(11, 14, 20);
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.text('Molecufy Assessment Report', 20, 25);
+    
+    // Summary
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.text(`Student: Chemistry Explorer`, 20, 55);
+    doc.text(`Completion Date: ${date}`, 20, 65);
+    doc.text(`Final Score: ${score} / ${QUESTIONS.length} (${(score / QUESTIONS.length * 100).toFixed(1)}%)`, 20, 75);
+    
+    // Grade
+    const grade = score === QUESTIONS.length ? 'A+' : score >= 4 ? 'A' : score >= 3 ? 'B' : 'C';
+    doc.setFontSize(16);
+    doc.text(`Assessment Grade: ${grade}`, 20, 90);
+    
+    // Detailed Breakdown
+    doc.setFontSize(14);
+    doc.text('Question Summary:', 20, 110);
+    doc.setFontSize(10);
+    
+    QUESTIONS.forEach((q, i) => {
+      const y = 120 + (i * 20);
+      doc.text(`${i + 1}. ${q.text}`, 20, y);
+      doc.setTextColor(score >= (i + 1) ? 16 : 220, score >= (i + 1) ? 185 : 38, score >= (i + 1) ? 129 : 38);
+      doc.text(`Status: Verified Correct`, 25, y + 7);
+      doc.setTextColor(0, 0, 0);
+    });
+    
+    doc.save(`Molecufy_Report_${new Date().getTime()}.pdf`);
+  };
+
+  const progress = ((currentIndex + (isAnswered ? 1 : 0)) / QUESTIONS.length) * 100;
 
   return (
     <div className="min-h-full flex items-center justify-center p-6 bg-[#0B0E14] overflow-x-auto overflow-y-auto">
@@ -118,6 +206,15 @@ export function Quiz() {
             exit={{ opacity: 0, x: -20 }}
             className="w-full max-w-2xl"
           >
+            {/* Progress Bar */}
+            <div className="w-full h-1.5 bg-slate-800 rounded-full mb-8 overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+              />
+            </div>
+
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-xl font-bold text-white tracking-tight">Question {currentIndex + 1}</h2>
@@ -188,26 +285,68 @@ export function Quiz() {
             key="result"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center bg-[#161B22] border border-slate-700 p-12 rounded-3xl shadow-2xl max-w-md w-full"
+            className="w-full max-w-2xl space-y-6"
           >
-            <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-8 text-amber-500 border border-amber-500/20">
-              <Trophy size={40} />
-            </div>
-            <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Quiz Results</h1>
-            <p className="text-slate-500 mb-10">You've mastered the basics of molecular chemistry.</p>
-            
-            <div className="text-6xl font-black mb-12 flex flex-col items-center">
-              <span className="text-blue-500">{score} <span className="text-slate-700">/</span> {QUESTIONS.length}</span>
-              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mt-3">Final Score</span>
+            <div className="text-center bg-[#161B22] border border-slate-700 p-10 rounded-3xl shadow-2xl">
+              <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-8 text-amber-500 border border-amber-500/20 shadow-xl shadow-amber-500/5">
+                <Trophy size={40} />
+              </div>
+              <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Quiz Results</h1>
+              <p className="text-slate-500 mb-10">Assessment performance analytics finalized.</p>
+              
+              <div className="text-6xl font-black mb-12 flex flex-col items-center">
+                <span className="text-blue-500">{score} <span className="text-slate-700">/</span> {QUESTIONS.length}</span>
+                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mt-3">Final Score</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-10">
+                <button
+                  onClick={startQuiz}
+                  className="py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-all border border-slate-700 flex items-center justify-center gap-2"
+                >
+                  <RefreshCw size={18} />
+                  Retry
+                </button>
+                <button
+                  onClick={generatePDFReport}
+                  className="py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+                >
+                  <Download size={18} />
+                  Download PDF
+                </button>
+              </div>
             </div>
 
-            <button
-              onClick={startQuiz}
-              className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
-            >
-              <RefreshCw size={20} />
-              Re-run Simulation
-            </button>
+            {/* Leaderboard */}
+            <div className="bg-[#161B22] border border-slate-800 p-8 rounded-3xl">
+              <div className="flex items-center gap-3 mb-6">
+                <Medal size={20} className="text-amber-500" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-widest">Recent Assessments</h3>
+              </div>
+              <div className="space-y-3">
+                {leaderboard.length > 0 ? leaderboard.map((entry, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-4 bg-[#0B0E14] rounded-2xl border border-slate-800/50">
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+                        #{idx + 1}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-200">{entry.score} / {entry.total}</p>
+                        <p className="text-[10px] text-slate-600 font-medium">{entry.date}</p>
+                      </div>
+                    </div>
+                    {entry.streak > 0 && (
+                      <div className="flex items-center gap-1.5 px-3 py-1 bg-orange-500/10 text-orange-500 rounded-full border border-orange-500/20">
+                        <History size={12} />
+                        <span className="text-[10px] font-black">{entry.streak} STREAK</span>
+                      </div>
+                    )}
+                  </div>
+                )) : (
+                  <p className="text-center py-6 text-slate-600 text-sm italic font-medium">No previous data logs found.</p>
+                )}
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

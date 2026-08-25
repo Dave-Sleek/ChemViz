@@ -15,12 +15,17 @@ import {
   Maximize2,
   X,
   GripHorizontal,
-  Heart
+  Heart,
+  ArrowLeftRight,
+  Sparkles,
+  Menu
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { generateMoleculeReport } from '../utils/report';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Molecule3D, type Molecule3DHandle } from '../components/Molecule3D';
+import { ComparisonView } from '../components/ComparisonView';
+import { ReactionSimulator } from '../components/ReactionSimulator';
 import { type MoleculeData, type ViewType } from '../types';
 import { formatFormula } from '../utils/formulaParser';
 
@@ -39,6 +44,10 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
   const [projection, setProjection] = useState<'perspective' | 'orthographic'>('perspective');
   const [autoRotate, setAutoRotate] = useState(true);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [showComparison, setShowComparison] = useState(false);
+  const [showReactionSim, setShowReactionSim] = useState(false);
+  const [moleculeHistory, setMoleculeHistory] = useState<MoleculeData[]>([]);
   
   const molecule3DRef = useRef<Molecule3DHandle>(null);
   const dragControls = useDragControls();
@@ -47,8 +56,29 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
     if (molecule) {
       const favorites = JSON.parse(localStorage.getItem('favorite_molecules') || '[]');
       setIsFavorite(favorites.includes(molecule.formula));
+
+      // Update history
+      setMoleculeHistory(prev => {
+        if (prev.some(m => m.formula === molecule.formula)) return prev;
+        const newHistory = [molecule, ...prev].slice(0, 10);
+        return newHistory;
+      });
     }
   }, [molecule]);
+
+  // Handle mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      if (window.innerWidth < 1024) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const toggleFavorite = () => {
     if (!molecule) return;
@@ -109,77 +139,144 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
 
   return (
     <div className="h-full flex flex-col lg:flex-row bg-[#0B0E14] relative overflow-hidden">
+      {/* Sidebar Toggle (Desktop & Mobile) */}
+      {!isSidebarOpen && (
+        <motion.button 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => setIsSidebarOpen(true)}
+          className="absolute top-6 left-6 z-40 p-3 bg-[#161B22]/80 backdrop-blur-md border border-white/10 rounded-xl text-white shadow-2xl hover:bg-[#1C2128] transition-all"
+        >
+          <Menu size={20} />
+        </motion.button>
+      )}
+
       {/* Sidebar - Molecule Info */}
-      <aside className="w-full lg:w-80 bg-[#161B22] border-r border-slate-800 flex flex-col shrink-0 z-20">
-        <div className="p-6 border-b border-slate-800">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg border border-blue-500/20">
-              <FlaskConical size={20} />
+      <AnimatePresence mode="wait">
+        {isSidebarOpen && (
+          <motion.aside 
+            initial={{ x: -320, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -320, opacity: 0 }}
+            className="fixed lg:relative inset-y-0 left-0 w-80 bg-[#161B22] border-r border-slate-800 flex flex-col shrink-0 z-40 lg:z-20 shadow-2xl lg:shadow-none"
+          >
+            <div className="p-6 border-b border-slate-800">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg border border-blue-500/20">
+                    <FlaskConical size={20} />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Compound Explorer</span>
+                </div>
+                <button 
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="p-2 text-slate-500 hover:text-white transition-colors bg-[#0B0E14] rounded-lg border border-slate-800/50"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <h2 className="text-2xl font-black text-white leading-tight mb-1">{molecule.name}</h2>
+              <p className="text-blue-400 font-mono font-bold text-lg mb-4">{formatFormula(molecule.formula)}</p>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-3 bg-[#0B0E14] rounded-xl border border-slate-800">
+                  <p className="text-[9px] font-bold text-slate-500 uppercase mb-1">Molar Mass</p>
+                  <p className="text-xs font-black text-slate-200">{molecule.molecularWeight} <span className="text-[10px] font-medium opacity-60">g/mol</span></p>
+                </div>
+                <div className="p-3 bg-[#0B0E14] rounded-xl border border-slate-800">
+                  <p className="text-[9px] font-bold text-slate-500 uppercase mb-1">Charge</p>
+                  <p className="text-xs font-black text-slate-200">{molecule.properties.Charge || 0}</p>
+                </div>
+              </div>
             </div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Compound Explorer</span>
-          </div>
-          <h2 className="text-2xl font-black text-white leading-tight mb-1">{molecule.name}</h2>
-          <p className="text-blue-400 font-mono font-bold text-lg mb-4">{formatFormula(molecule.formula)}</p>
-          
-          <div className="grid grid-cols-2 gap-2">
-            <div className="p-3 bg-[#0B0E14] rounded-xl border border-slate-800">
-              <p className="text-[9px] font-bold text-slate-500 uppercase mb-1">Molar Mass</p>
-              <p className="text-xs font-black text-slate-200">{molecule.molecularWeight} <span className="text-[10px] font-medium opacity-60">g/mol</span></p>
-            </div>
-            <div className="p-3 bg-[#0B0E14] rounded-xl border border-slate-800">
-              <p className="text-[9px] font-bold text-slate-500 uppercase mb-1">Charge</p>
-              <p className="text-xs font-black text-slate-200">{molecule.properties.Charge || 0}</p>
-            </div>
-          </div>
-        </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <section>
-            <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Info size={12} /> Chemical Summary
-            </h3>
-            <p className="text-sm text-slate-400 leading-relaxed italic">
-              "{molecule.description || 'No detailed scientific description available for this compound in the current session logs.'}"
-            </p>
-          </section>
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <section>
+                <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Info size={12} /> Chemical Summary
+                </h3>
+                <p className="text-sm text-slate-400 leading-relaxed italic">
+                  "{molecule.description || 'No detailed scientific description available for this compound in the current session logs.'}"
+                </p>
+              </section>
 
-          <section>
-            <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <History size={12} /> Quick Actions
-            </h3>
-            <div className="flex flex-col gap-2">
-              <button 
-                onClick={() => setIsPropertiesOpen(true)}
-                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold py-2.5 rounded-lg transition-all border border-slate-700 flex items-center justify-center gap-2"
-              >
-                <Settings size={16} />
-                Detailed Properties
-              </button>
-              <button 
-                onClick={() => generateMoleculeReport(molecule)}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold py-2.5 rounded-lg transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
-              >
-                <Download size={16} />
-                Download Report
-              </button>
-              <button 
-                onClick={toggleFavorite}
-                className={`w-full text-sm font-medium py-2 rounded-lg transition-colors border ${
-                  isFavorite 
-                    ? 'bg-red-500/10 text-red-400 border-red-500/20' 
-                    : 'text-slate-400 hover:text-white border-slate-800'
-                } flex items-center justify-center gap-2`}
-              >
-                <Heart size={16} className={isFavorite ? 'fill-current' : ''} />
-                {isFavorite ? 'Remove from Saved' : 'Save Compound'}
-              </button>
+              <section>
+                <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <History size={12} /> Advanced Labs
+                </h3>
+                <div className="flex flex-col gap-2">
+                  <button 
+                    onClick={() => setShowComparison(true)}
+                    className="w-full bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm font-bold py-2.5 rounded-lg transition-all border border-slate-700 flex items-center justify-center gap-2"
+                  >
+                    <ArrowLeftRight size={16} className="text-blue-400" />
+                    Weight Comparison
+                  </button>
+                  <button 
+                    onClick={() => setShowReactionSim(true)}
+                    className="w-full bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm font-bold py-2.5 rounded-lg transition-all border border-slate-700 flex items-center justify-center gap-2"
+                  >
+                    <Sparkles size={16} className="text-emerald-400" />
+                    Reaction Simulator
+                  </button>
+                </div>
+              </section>
+
+              <section>
+                <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Settings size={12} /> Quick Actions
+                </h3>
+                <div className="flex flex-col gap-2">
+                  <button 
+                    onClick={() => setIsPropertiesOpen(true)}
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold py-2.5 rounded-lg transition-all border border-slate-700 flex items-center justify-center gap-2"
+                  >
+                    <Settings size={16} />
+                    Detailed Properties
+                  </button>
+                  <button 
+                    onClick={() => generateMoleculeReport(molecule)}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold py-2.5 rounded-lg transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+                  >
+                    <Download size={16} />
+                    Download Report
+                  </button>
+                  <button 
+                    onClick={toggleFavorite}
+                    className={`w-full text-sm font-medium py-2 rounded-lg transition-colors border ${
+                      isFavorite 
+                        ? 'bg-red-500/10 text-red-400 border-red-500/20' 
+                        : 'text-slate-400 hover:text-white border-slate-800'
+                    } flex items-center justify-center gap-2`}
+                  >
+                    <Heart size={16} className={isFavorite ? 'fill-current' : ''} />
+                    {isFavorite ? 'Remove from Saved' : 'Save Compound'}
+                  </button>
+                </div>
+              </section>
             </div>
-          </section>
-        </div>
-      </aside>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* Main View Area */}
-      <section className="flex-1 flex flex-col relative">
+      <section className="flex-1 flex flex-col relative h-full">
+        {/* Comparison & Reaction Overlays */}
+        <AnimatePresence>
+          {showComparison && (
+            <ComparisonView 
+              currentMolecule={molecule} 
+              history={moleculeHistory} 
+              onClose={() => setShowComparison(false)} 
+            />
+          )}
+          {showReactionSim && (
+            <ReactionSimulator 
+              initialFormula={molecule.formula} 
+              onClose={() => setShowReactionSim(false)} 
+            />
+          )}
+        </AnimatePresence>
         {/* View Tabs */}
         <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-[#161B22]/80 backdrop-blur-md p-1 rounded-xl border border-white/5 flex items-center gap-1 z-30 shadow-2xl">
           {[
@@ -274,9 +371,45 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
                 />
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-slate-500 bg-[#0B0E14]">
-                <Microscope size={48} className="mb-4 opacity-10" />
-                <p className="text-sm font-bold uppercase tracking-widest opacity-40">3D Dataset Not Available</p>
+              <div className="h-full flex flex-col items-center justify-center p-8 text-slate-400 bg-[#0B0E14] overflow-y-auto">
+                <div className="max-w-md w-full text-center space-y-8">
+                  <div>
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="inline-block p-4 bg-orange-500/10 text-orange-500 rounded-2xl mb-4"
+                    >
+                      <FlaskConical size={32} />
+                    </motion.div>
+                    <h3 className="text-xl font-black text-white">3D Dataset Not Available</h3>
+                    <p className="text-sm opacity-60">This compound lacks a verified 3D conformer record in the PubChem repository.</p>
+                  </div>
+
+                  {molecule.cid && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="bg-[#161B22] p-8 rounded-[2rem] border border-slate-800 shadow-2xl overflow-hidden group"
+                    >
+                      <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-6 block">Structural 2D Representation</span>
+                      <div className="relative aspect-square w-full max-w-[300px] mx-auto bg-white rounded-3xl p-4 flex items-center justify-center shadow-inner">
+                        <img 
+                          src={`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${molecule.cid}/PNG`} 
+                          alt={molecule.name}
+                          className="max-w-full max-h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <div className="mt-8 pt-6 border-t border-slate-800/50 flex flex-col items-center">
+                        <span className="text-[9px] font-bold text-slate-600 uppercase mb-2">Canonical SMILES</span>
+                        <p className="text-xs font-mono text-slate-400 break-all bg-[#0B0E14] p-3 rounded-xl border border-slate-800/50 w-full">
+                          {molecule.smiles || 'Data unavailable'}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
               </div>
             )
           ) : activeTab === '2d' ? (

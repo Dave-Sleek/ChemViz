@@ -34,11 +34,11 @@ export function Navbar({ view, setView, toggleTheme, theme, onSearch }: NavbarPr
         onClick={() => navigate('home')}
       >
         <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-          CV
+          MF
         </div>
         <div className="hidden xs:block">
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            ChemViz 
+            Molecufy 
             <span className="text-blue-400 font-light text-sm hidden lg:inline">Chemistry made visual</span>
           </h1>
         </div>

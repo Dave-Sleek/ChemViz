@@ -19,7 +19,7 @@ export const generateMoleculeReport = (molecule: MoleculeData) => {
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('CHEMVIZ SCIENTIFIC REPORT', 15, 33);
+  doc.text('MOLECUFY SCIENTIFIC REPORT', 15, 33);
   doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth - 15, 33, { align: 'right' });
 
   // Formula & Basic Info
@@ -102,7 +102,7 @@ export const generateMoleculeReport = (molecule: MoleculeData) => {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`ChemViz Molecular Data Engine v4.2.1 — Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    doc.text(`Molecufy Molecular Data Engine v4.2.1 — Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
   }
 
   doc.save(`${molecule.formula}_Report.pdf`);

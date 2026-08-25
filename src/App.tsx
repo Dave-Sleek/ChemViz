@@ -6,6 +6,8 @@ import { Explorer } from './pages/Explorer';
 import { PeriodicTable } from './pages/PeriodicTable';
 import { Quiz } from './pages/Quiz';
 import { Favorites } from './pages/Favorites';
+import { Help } from './pages/Help';
+import { About } from './pages/About';
 import { fetchMoleculeByFormula } from './services/pubchem';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -78,6 +80,8 @@ export default function App() {
             {view === 'table' && <PeriodicTable />}
             {view === 'quiz' && <Quiz />}
             {view === 'favorites' && <Favorites onSelect={handleSearch} />}
+            {view === 'help' && <Help />}
+            {view === 'about' && <About />}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -89,8 +93,19 @@ export default function App() {
           <span>Data Source: PubChem API</span>
         </div>
         <div className="flex gap-4">
-          <span>© 2026 ChemViz — Visual Chemistry Education</span>
-          <span className="text-blue-500 cursor-pointer hover:text-blue-400 transition-colors">Help & Documentation</span>
+          <span>© 2026 Molecufy — Visual Chemistry Education</span>
+          <button 
+            onClick={() => setView('about')}
+            className="hover:text-blue-500 transition-colors"
+          >
+            About
+          </button>
+          <button 
+            onClick={() => setView('help')}
+            className="text-blue-500 hover:text-blue-400 transition-colors"
+          >
+            Help & Documentation
+          </button>
         </div>
       </footer>
     </div>

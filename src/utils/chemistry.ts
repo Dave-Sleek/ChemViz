@@ -55,3 +55,8 @@ export function getElementColor(symbol: string): string {
   };
   return colors[symbol] || '#CCCCCC';
 }
+
+export function getAtomicNumber(symbol: string): number {
+  const el = elements.find(e => e.symbol === symbol);
+  return el ? el.number : 0;
+}
