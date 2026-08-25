@@ -1,0 +1,216 @@
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { BrainCircuit, CheckCircle2, XCircle, RefreshCw, Trophy, ArrowRight } from 'lucide-react';
+import { formatFormula } from '../utils/formulaParser';
+
+interface Question {
+  id: number;
+  text: string;
+  options: string[];
+  correct: number;
+  explanation: string;
+}
+
+const QUESTIONS: Question[] = [
+  {
+    id: 1,
+    text: "What is the molecular formula of water?",
+    options: ["CO2", "H2O", "CH4", "NaCl"],
+    correct: 1,
+    explanation: "Water consists of two hydrogen atoms covalently bonded to a single oxygen atom."
+  },
+  {
+    id: 2,
+    text: "Which element has the atomic number 6?",
+    options: ["Oxygen", "Nitrogen", "Carbon", "Boron"],
+    correct: 2,
+    explanation: "Carbon is the 6th element in the periodic table and is the basis of all organic life."
+  },
+  {
+    id: 3,
+    text: "What is the common name for NaCl?",
+    options: ["Glucose", "Baking Soda", "Table Salt", "Bleach"],
+    correct: 2,
+    explanation: "Sodium chloride (NaCl) is commonly known as table salt."
+  },
+  {
+    id: 4,
+    text: "Which of these is a noble gas?",
+    options: ["Hydrogen", "Helium", "Oxygen", "Chlorine"],
+    correct: 1,
+    explanation: "Helium is the first noble gas (Group 18), known for being extremely unreactive."
+  },
+  {
+    id: 5,
+    text: "What is the approximate molar mass of CO2?",
+    options: ["18.0 g/mol", "28.0 g/mol", "44.0 g/mol", "58.5 g/mol"],
+    correct: 2,
+    explanation: "Carbon (12.0) + 2 × Oxygen (16.0) = 44.0 g/mol."
+  }
+];
+
+export function Quiz() {
+  const [currentStep, setCurrentStep] = useState<'start' | 'playing' | 'result'>('start');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [isAnswered, setIsAnswered] = useState(false);
+
+  const startQuiz = () => {
+    setCurrentIndex(0);
+    setScore(0);
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setCurrentStep('playing');
+  };
+
+  const handleOptionClick = (idx: number) => {
+    if (isAnswered) return;
+    setSelectedOption(idx);
+    setIsAnswered(true);
+    if (idx === QUESTIONS[currentIndex].correct) {
+      setScore(s => s + 1);
+    }
+  };
+
+  const nextQuestion = () => {
+    if (currentIndex < QUESTIONS.length - 1) {
+      setCurrentIndex(c => c + 1);
+      setSelectedOption(null);
+      setIsAnswered(false);
+    } else {
+      setCurrentStep('result');
+    }
+  };
+
+  return (
+    <div className="h-full flex items-center justify-center p-6 bg-[#0B0E14]">
+      <AnimatePresence mode="wait">
+        {currentStep === 'start' && (
+          <motion.div
+            key="start"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="text-center bg-[#161B22] border border-slate-700 p-12 rounded-3xl shadow-2xl shadow-blue-500/5 max-w-md w-full"
+          >
+            <div className="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-blue-500/20">
+              <BrainCircuit size={40} className="text-blue-500" />
+            </div>
+            <h1 className="text-4xl font-black text-white mb-4 tracking-tight">Chemistry Quiz</h1>
+            <p className="text-slate-400 mb-10 text-lg font-light leading-relaxed">
+              Test your knowledge of formulas, elements, and molecular properties.
+            </p>
+            <button
+              onClick={startQuiz}
+              className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20"
+            >
+              Start Challenge
+            </button>
+          </motion.div>
+        )}
+
+        {currentStep === 'playing' && (
+          <motion.div
+            key="playing"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="w-full max-w-2xl"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-xl font-bold text-white tracking-tight">Question {currentIndex + 1}</h2>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Chemistry Fundamentals</div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-black text-blue-500">{currentIndex + 1}<span className="text-slate-700 font-light mx-1">/</span>{QUESTIONS.length}</div>
+              </div>
+            </div>
+
+            <div className="bg-[#161B22] border border-slate-700 p-10 rounded-3xl shadow-xl mb-8">
+              <h2 className="text-2xl font-bold text-white mb-10 leading-tight">{QUESTIONS[currentIndex].text}</h2>
+              <div className="grid grid-cols-1 gap-4">
+                {QUESTIONS[currentIndex].options.map((opt, idx) => {
+                  let statusClass = "border-slate-800 bg-[#0D1117] text-slate-300 hover:border-slate-600 hover:bg-[#1C2128]";
+                  if (isAnswered) {
+                    if (idx === QUESTIONS[currentIndex].correct) {
+                      statusClass = "border-emerald-500 bg-emerald-500/10 text-emerald-400";
+                    } else if (idx === selectedOption) {
+                      statusClass = "border-red-500 bg-red-500/10 text-red-400";
+                    } else {
+                      statusClass = "opacity-30 border-slate-800 bg-[#0D1117]";
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      disabled={isAnswered}
+                      onClick={() => handleOptionClick(idx)}
+                      className={`p-5 rounded-xl border-2 text-left font-bold transition-all flex items-center justify-between group ${statusClass}`}
+                    >
+                      <span>{formatFormula(opt)}</span>
+                      {isAnswered && idx === QUESTIONS[currentIndex].correct && <CheckCircle2 size={24} />}
+                      {isAnswered && idx === selectedOption && idx !== QUESTIONS[currentIndex].correct && <XCircle size={24} />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {isAnswered && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
+                    <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Concept Explanation</h3>
+                    <p className="text-sm text-slate-400 leading-relaxed italic">{QUESTIONS[currentIndex].explanation}</p>
+                  </div>
+                  <button
+                    onClick={nextQuestion}
+                    className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20"
+                  >
+                    {currentIndex < QUESTIONS.length - 1 ? 'Continue' : 'Show Results'}
+                    <ArrowRight size={20} />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {currentStep === 'result' && (
+          <motion.div
+            key="result"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center bg-[#161B22] border border-slate-700 p-12 rounded-3xl shadow-2xl max-w-md w-full"
+          >
+            <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-8 text-amber-500 border border-amber-500/20">
+              <Trophy size={40} />
+            </div>
+            <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Quiz Results</h1>
+            <p className="text-slate-500 mb-10">You've mastered the basics of molecular chemistry.</p>
+            
+            <div className="text-6xl font-black mb-12 flex flex-col items-center">
+              <span className="text-blue-500">{score} <span className="text-slate-700">/</span> {QUESTIONS.length}</span>
+              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mt-3">Final Score</span>
+            </div>
+
+            <button
+              onClick={startQuiz}
+              className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+            >
+              <RefreshCw size={20} />
+              Re-run Simulation
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
