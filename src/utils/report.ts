@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { type MoleculeData } from '../types';
 import { formatFormula } from './formulaParser';
 import { getElement } from '../data/elements';
@@ -45,7 +45,7 @@ export const generateMoleculeReport = (molecule: MoleculeData) => {
     ['Rotatable Bonds', `${molecule.properties.RotatableBondCount || 0}`]
   ];
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: 70,
     head: [metrics[0]],
     body: metrics.slice(1),
@@ -73,7 +73,7 @@ export const generateMoleculeReport = (molecule: MoleculeData) => {
     ];
   });
 
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: finalY + 20,
     head: [['Symbol', 'Element', 'Atoms', 'Mass %']],
     body: compositionData,

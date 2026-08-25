@@ -1,24 +1,27 @@
-import { motion } from 'motion/react';
-import { type MoleculeData } from '../types';
-import { Molecule3D } from '../components/Molecule3D';
-import { formatFormula } from '../utils/formulaParser';
-import { getElement } from '../data/elements';
-import { calculatePercentageComposition, getElementColor } from '../utils/chemistry';
 import { 
+  FlaskConical, 
   Info, 
-  Weight, 
-  Layers, 
-  Activity, 
-  ChevronDown, 
-  Star, 
+  Settings, 
+  ChevronRight, 
+  History, 
   Share2, 
   Microscope,
   AlertCircle,
   Calculator,
-  Download
+  Download,
+  Camera,
+  RotateCcw,
+  Box,
+  Maximize2,
+  X,
+  GripHorizontal
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { generateMoleculeReport } from '../utils/report';
+import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { Molecule3D, type Molecule3DHandle } from '../components/Molecule3D';
+import { type MoleculeData, type ViewType } from '../types';
+import { formatFormula } from '../utils/formulaParser';
 
 interface ExplorerProps {
   molecule: MoleculeData | null;
@@ -28,9 +31,16 @@ interface ExplorerProps {
 }
 
 export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) {
+  const [activeTab, setActiveTab] = useState<'3d' | '2d' | 'data'>('3d');
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showCalculation, setShowCalculation] = useState(false);
-  const [activeTab, setActiveTab] = useState<'3d' | 'lewis'>('3d');
+  const [showBondLengths, setShowBondLengths] = useState(false);
+  const [showBondAngles, setShowBondAngles] = useState(false);
+  const [projection, setProjection] = useState<'perspective' | 'orthographic'>('perspective');
+  const [autoRotate, setAutoRotate] = useState(true);
+  const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
+  
+  const molecule3DRef = useRef<Molecule3DHandle>(null);
+  const dragControls = useDragControls();
 
   useEffect(() => {
     if (molecule) {
@@ -54,224 +64,379 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-[#0B0E14]">
-        <div className="relative w-16 h-16">
-          <div className="absolute inset-0 border-2 border-blue-500/20 rounded-full" />
-          <div className="absolute inset-0 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-        <p className="mt-6 text-slate-500 text-sm font-medium tracking-widest uppercase">Analyzing Molecular Structure</p>
+      <div className="h-full flex flex-col items-center justify-center bg-[#0B0E14] text-slate-400">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          className="mb-6"
+        >
+          <FlaskConical size={48} className="text-blue-500" />
+        </motion.div>
+        <h2 className="text-xl font-bold mb-2">Analyzing Compound...</h2>
+        <p className="text-sm opacity-60">Synthesizing 3D structures and physical properties</p>
       </div>
     );
   }
 
   if (error || !molecule) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-12 bg-[#0B0E14]">
-        <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-xl flex items-center justify-center mb-6 border border-red-500/20">
-          <AlertCircle size={32} />
-        </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Molecular Analysis Failed</h2>
-        <p className="text-slate-500 max-w-md mb-8">
-          {error || "We couldn't retrieve information for this compound."}
-        </p>
+      <div className="h-full flex flex-col items-center justify-center bg-[#0B0E14] text-slate-400 px-6 text-center">
+        <AlertCircle size={48} className="text-red-500 mb-6 opacity-50" />
+        <h2 className="text-xl font-bold mb-2 text-white">Analysis Failed</h2>
+        <p className="text-sm opacity-60 max-w-md mb-8">{error || 'The molecule structure could not be retrieved from the scientific database.'}</p>
         <button 
           onClick={() => window.location.reload()}
-          className="px-6 py-2 bg-slate-800 text-white rounded-lg font-bold hover:bg-slate-700 transition-colors border border-slate-700"
+          className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all"
         >
-          Return to Hub
+          Return to Terminal
         </button>
       </div>
     );
   }
 
-  const composition = calculatePercentageComposition(molecule.elements);
+  const handleSnapshot = () => {
+    if (molecule3DRef.current) {
+      molecule3DRef.current.takeSnapshot();
+    }
+  };
+
+  const handleResetCamera = () => {
+    if (molecule3DRef.current) {
+      molecule3DRef.current.resetCamera();
+    }
+  };
 
   return (
-    <div className="flex h-full overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-[320px] bg-[#0D1117] border-r border-slate-800 p-6 flex flex-col gap-6 overflow-y-auto shrink-0 scrollbar-hide">
-        <section>
-          <div className="flex justify-between items-start mb-2">
-            <h2 className="text-2xl font-bold text-white leading-tight">{molecule.name === 'Unknown Compound' ? molecule.formula : molecule.name}</h2>
-            {molecule.cid && (
-              <span className="bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-blue-500/20">
-                CID: {molecule.cid}
-              </span>
-            )}
+    <div className="h-full flex flex-col lg:flex-row bg-[#0B0E14] relative overflow-hidden">
+      {/* Sidebar - Molecule Info */}
+      <aside className="w-full lg:w-80 bg-[#161B22] border-r border-slate-800 flex flex-col shrink-0 z-20">
+        <div className="p-6 border-b border-slate-800">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg border border-blue-500/20">
+              <FlaskConical size={20} />
+            </div>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Compound Explorer</span>
           </div>
-          <p className="text-4xl font-light text-slate-300 tracking-wide break-all">
-            {formatFormula(molecule.formula)}
-          </p>
-          {molecule.description && (
-            <p className="text-xs text-slate-500 mt-3 leading-relaxed italic line-clamp-4">
-              {molecule.description}
+          <h2 className="text-2xl font-black text-white leading-tight mb-1">{molecule.name}</h2>
+          <p className="text-blue-400 font-mono font-bold text-lg mb-4">{formatFormula(molecule.formula)}</p>
+          
+          <div className="grid grid-cols-2 gap-2">
+            <div className="p-3 bg-[#0B0E14] rounded-xl border border-slate-800">
+              <p className="text-[9px] font-bold text-slate-500 uppercase mb-1">Molar Mass</p>
+              <p className="text-xs font-black text-slate-200">{molecule.molecularWeight} <span className="text-[10px] font-medium opacity-60">g/mol</span></p>
+            </div>
+            <div className="p-3 bg-[#0B0E14] rounded-xl border border-slate-800">
+              <p className="text-[9px] font-bold text-slate-500 uppercase mb-1">Charge</p>
+              <p className="text-xs font-black text-slate-200">{molecule.properties.Charge || 0}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <section>
+            <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Info size={12} /> Chemical Summary
+            </h3>
+            <p className="text-sm text-slate-400 leading-relaxed italic">
+              "{molecule.description || 'No detailed scientific description available for this compound in the current session logs.'}"
             </p>
-          )}
-        </section>
+          </section>
 
-        <div className="h-px bg-slate-800" />
-
-        <section>
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Molecular Metrics</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-[#161B22] p-3 rounded-lg border border-slate-800">
-              <p className="text-[10px] text-slate-500 uppercase mb-1">Molar Mass</p>
-              <p className="text-lg font-semibold text-blue-400 truncate">
-                {molecule.molecularWeight.toFixed(2)} <span className="text-[10px] font-normal text-slate-500">g/mol</span>
-              </p>
+          <section>
+            <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <History size={12} /> Quick Actions
+            </h3>
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={() => setIsPropertiesOpen(true)}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold py-2.5 rounded-lg transition-all border border-slate-700 flex items-center justify-center gap-2"
+              >
+                <Settings size={16} />
+                Detailed Properties
+              </button>
+              <button 
+                onClick={() => generateMoleculeReport(molecule)}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold py-2.5 rounded-lg transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+              >
+                <Download size={16} />
+                Download Report
+              </button>
+              <button 
+                onClick={toggleFavorite}
+                className={`w-full text-sm font-medium py-2 rounded-lg transition-colors border ${
+                  isFavorite 
+                    ? 'bg-red-500/10 text-red-400 border-red-500/20' 
+                    : 'text-slate-400 hover:text-white border-slate-800'
+                } flex items-center justify-center gap-2`}
+              >
+                <Heart size={16} className={isFavorite ? 'fill-current' : ''} />
+                {isFavorite ? 'Remove from Saved' : 'Save Compound'}
+              </button>
             </div>
-            <div className="bg-[#161B22] p-3 rounded-lg border border-slate-800">
-              <p className="text-[10px] text-slate-500 uppercase mb-1">Charge</p>
-              <p className="text-lg font-semibold text-emerald-400">{molecule.properties.Charge ?? 0}</p>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Composition</h3>
-          <div className="space-y-4">
-            {composition.map((c) => (
-              <div key={c.symbol}>
-                <div className="flex justify-between text-[11px] mb-1.5 text-slate-400">
-                  <span>{getElement(c.symbol)?.name || c.symbol} ({molecule.elements.find(e => e.symbol === c.symbol)?.count})</span>
-                  <span className="font-mono text-slate-200">{c.percentage.toFixed(1)}%</span>
-                </div>
-                <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${c.percentage}%` }}
-                    className="h-full"
-                    style={{ backgroundColor: getElementColor(c.symbol) }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Properties</h3>
-          <div className="space-y-2">
-            <PropItem label="Exact Mass" value={molecule.properties.ExactMass?.toFixed(4)} />
-            <PropItem label="H-Bond Donors" value={molecule.properties.HBondDonorCount} />
-            <PropItem label="H-Bond Acceptors" value={molecule.properties.HBondAcceptorCount} />
-            <PropItem label="Complexity" value={molecule.properties.Complexity} />
-          </div>
-        </section>
-
-        <div className="mt-auto pt-4 flex flex-col gap-2">
-          <button 
-            onClick={() => generateMoleculeReport(molecule)}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold py-2.5 rounded-lg transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
-          >
-            <Download size={16} />
-            Download Report
-          </button>
-          <button 
-            onClick={toggleFavorite}
-            className={`w-full text-sm font-medium py-2 rounded-lg transition-colors border ${
-              isFavorite 
-                ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20' 
-                : 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700'
-            }`}
-          >
-            {isFavorite ? 'Saved to Favorites' : 'Add to Favorites'}
-          </button>
-          <button 
-            onClick={() => setShowCalculation(!showCalculation)}
-            className="w-full text-[10px] text-slate-500 hover:text-slate-300 font-bold uppercase tracking-widest py-2 transition-colors"
-          >
-            {showCalculation ? 'Hide Calculation' : 'Show Molar Calculation'}
-          </button>
+          </section>
         </div>
       </aside>
 
-      {/* Main Viewport */}
-      <section className="flex-1 flex flex-col relative bg-[#0B0E14]">
-        <div className="absolute top-6 left-6 z-10 flex gap-2">
-          <button 
-            onClick={() => setActiveTab('3d')}
-            className={`px-4 py-2 rounded-md text-xs font-bold transition-all border ${
-              activeTab === '3d' 
-                ? 'bg-[#161B22]/80 backdrop-blur border-slate-600 text-white shadow-xl' 
-                : 'bg-slate-800/40 backdrop-blur border-slate-800 text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            3D Model
-          </button>
-          <button 
-            onClick={() => setActiveTab('lewis')}
-            className={`px-4 py-2 rounded-md text-xs font-bold transition-all border ${
-              activeTab === 'lewis' 
-                ? 'bg-[#161B22]/80 backdrop-blur border-slate-600 text-white shadow-xl' 
-                : 'bg-slate-800/40 backdrop-blur border-slate-800 text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            Lewis Structure
-          </button>
+      {/* Main View Area */}
+      <section className="flex-1 flex flex-col relative">
+        {/* View Tabs */}
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-[#161B22]/80 backdrop-blur-md p-1 rounded-xl border border-white/5 flex items-center gap-1 z-30 shadow-2xl">
+          {[
+            { id: '3d', label: '3D Structure', icon: <Box size={14} /> },
+            { id: '2d', label: '2D Schema', icon: <Share2 size={14} /> },
+            { id: 'data', label: 'Analytics', icon: <Calculator size={14} /> }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-bold transition-all ${
+                activeTab === tab.id 
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                  : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
         </div>
+
+        {/* 3D Visualization Control Panel */}
+        {activeTab === '3d' && (
+          <div className="absolute top-24 left-6 flex flex-col gap-2 z-30">
+            <motion.div 
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="bg-[#161B22]/90 backdrop-blur-md p-3 rounded-2xl border border-white/5 shadow-2xl flex flex-col gap-3"
+            >
+              <div className="pb-2 border-b border-white/5">
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">3D Controls</span>
+              </div>
+              
+              <ToggleButton 
+                active={showBondLengths} 
+                onClick={() => setShowBondLengths(!showBondLengths)}
+                label="Bond Lengths"
+              />
+              <ToggleButton 
+                active={showBondAngles} 
+                onClick={() => setShowBondAngles(!showBondAngles)}
+                label="Bond Angles"
+              />
+              <ToggleButton 
+                active={autoRotate} 
+                onClick={() => setAutoRotate(!autoRotate)}
+                label="Auto Rotation"
+              />
+              
+              <div className="pt-2 border-t border-white/5 flex flex-col gap-2">
+                <button 
+                  onClick={() => setProjection(p => p === 'perspective' ? 'orthographic' : 'perspective')}
+                  className="flex items-center justify-between gap-4 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors text-[10px] font-bold text-slate-300"
+                >
+                  Projection: {projection === 'perspective' ? 'Persp' : 'Ortho'}
+                  <Maximize2 size={12} />
+                </button>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <button 
+                    onClick={handleResetCamera}
+                    className="p-2 bg-slate-800/50 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1"
+                    title="Reset Camera"
+                  >
+                    <RotateCcw size={14} />
+                  </button>
+                  <button 
+                    onClick={handleSnapshot}
+                    className="p-2 bg-blue-600/20 hover:bg-blue-600/30 rounded-lg text-blue-400 hover:text-blue-300 transition-colors flex items-center justify-center gap-1"
+                    title="Take Snapshot"
+                  >
+                    <Camera size={14} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
 
         <div className="flex-1 relative overflow-hidden">
           {activeTab === '3d' ? (
             molecule.structure3d ? (
               <div className="absolute inset-0">
-                <Molecule3D structure={molecule.structure3d} />
+                <Molecule3D 
+                  ref={molecule3DRef}
+                  structure={molecule.structure3d} 
+                  autoRotate={autoRotate}
+                  showBondLengths={showBondLengths}
+                  showBondAngles={showBondAngles}
+                  projection={projection}
+                />
               </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-slate-500 bg-[#0B0E14]">
                 <Microscope size={48} className="mb-4 opacity-10" />
-                <p className="text-sm font-medium tracking-widest uppercase opacity-30">3D Structure Unavailable</p>
+                <p className="text-sm font-bold uppercase tracking-widest opacity-40">3D Dataset Not Available</p>
               </div>
             )
+          ) : activeTab === '2d' ? (
+            <div className="h-full flex flex-col items-center justify-center text-slate-500 bg-[#0B0E14]">
+              <Share2 size={48} className="mb-4 opacity-10" />
+              <p className="text-sm font-bold uppercase tracking-widest opacity-40">2D Schema Engine Offline</p>
+              <p className="text-[10px] mt-2 max-w-xs text-center opacity-30">The PUG REST API record for this CID does not contain valid SVG or static layout nodes.</p>
+            </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center bg-[#0B0E14] p-12">
-              <div className="max-w-2xl w-full aspect-video bg-[#161B22]/40 rounded-3xl border border-slate-800 border-dashed flex flex-col items-center justify-center">
-                 <p className="text-slate-400 font-mono text-xl mb-4">{formatFormula(molecule.formula)}</p>
-                 <p className="text-xs text-slate-600 italic">2D Lewis Visualization coming soon in Engine v4.3</p>
+            <div className="h-full p-8 overflow-y-auto bg-[#0B0E14]">
+              <div className="max-w-2xl mx-auto space-y-8 pt-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(molecule.properties).map(([key, value]) => (
+                    <div key={key} className="p-4 bg-[#161B22] border border-slate-800 rounded-2xl flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                      <span className="text-sm font-bold text-slate-200">{String(value)}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Bottom Elements Strip */}
-        <div className="h-24 bg-[#161B22]/50 border-t border-slate-800 p-4 flex gap-4 overflow-x-auto items-center px-8 scrollbar-hide shrink-0">
-          {molecule.elements.map(el => (
-            <div key={el.symbol} className="flex-shrink-0 bg-[#0D1117] border border-slate-700 p-3 rounded-lg flex gap-3 items-center min-w-[160px]">
-              <div 
-                className="w-10 h-10 rounded flex items-center justify-center font-bold text-white shadow-inner"
-                style={{ backgroundColor: getElementColor(el.symbol) }}
-              >
-                {el.symbol}
-              </div>
-              <div>
-                <p className="text-xs font-bold leading-none mb-1 text-slate-200">{getElement(el.symbol)?.name || el.symbol}</p>
-                <p className="text-[10px] text-slate-500 uppercase tracking-tighter">
-                  {getElement(el.symbol)?.category || 'Element'} • {el.count} Atom(s)
-                </p>
-              </div>
-            </div>
-          ))}
-          <div className="ml-auto flex items-center gap-3">
+        {/* Interaction Strip */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-[#161B22]/90 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/5 z-30 shadow-2xl">
+          <div className="flex items-center gap-2 pr-4 border-r border-white/5">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-black text-white uppercase tracking-widest">Live Terminal</span>
+          </div>
+          <div className="flex items-center gap-3">
+             <button 
+               onClick={handleSnapshot}
+               className="bg-blue-600 hover:bg-blue-500 text-white text-[11px] px-4 py-2.5 rounded-lg font-bold transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2"
+             >
+               <Camera size={14} />
+               Capture Snapshot
+             </button>
              <button 
                onClick={() => generateMoleculeReport(molecule)}
-               className="bg-blue-600 hover:bg-blue-500 text-white text-[11px] px-4 py-2 rounded font-bold transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2"
+               className="bg-slate-700 hover:bg-slate-600 text-white text-[11px] px-4 py-2.5 rounded-lg font-bold transition-all flex items-center gap-2"
              >
                <Download size={14} />
-               Download PDF
+               Export JSON
              </button>
-             <button className="bg-slate-700 hover:bg-slate-600 text-white text-[11px] px-4 py-2 rounded font-bold transition-all">Export JSON</button>
           </div>
         </div>
       </section>
+
+      {/* Draggable Properties Panel */}
+      <AnimatePresence>
+        {isPropertiesOpen && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-y-0 right-0 w-full sm:w-96 bg-[#161B22] border-l border-slate-800 z-50 flex flex-col shadow-[-20px_0_40px_rgba(0,0,0,0.4)]"
+            drag="x"
+            dragControls={dragControls}
+            dragListener={false}
+            dragConstraints={{ left: 0 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.x > 100) setIsPropertiesOpen(false);
+            }}
+          >
+            <div 
+              className="h-10 w-full flex items-center justify-center border-b border-slate-800 cursor-grab active:cursor-grabbing text-slate-700 hover:text-slate-500 transition-colors"
+              onPointerDown={(e) => dragControls.start(e)}
+            >
+              <GripHorizontal size={24} />
+            </div>
+
+            <div className="p-6 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg">
+                  <Calculator size={18} />
+                </div>
+                <h3 className="text-lg font-black text-white">Physical Metrics</h3>
+              </div>
+              <button 
+                onClick={() => setIsPropertiesOpen(false)}
+                className="p-2 text-slate-500 hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+              <section className="space-y-4">
+                <div className="p-4 bg-[#0B0E14] rounded-2xl border border-slate-800">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">IUPAC Designation</p>
+                  <p className="text-sm font-bold text-slate-200 leading-relaxed">{molecule.name}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <MetricCard label="Molecular Weight" value={`${molecule.molecularWeight} g/mol`} />
+                  <MetricCard label="Exact Mass" value={`${molecule.properties.ExactMass || molecule.molecularWeight} g/mol`} />
+                  <MetricCard label="H-Bond Donors" value={molecule.properties.HBondDonorCount || 0} />
+                  <MetricCard label="H-Bond Acceptors" value={molecule.properties.HBondAcceptorCount || 0} />
+                  <MetricCard label="Rotatable Bonds" value={molecule.properties.RotatableBondCount || 0} />
+                  <MetricCard label="Complexity" value={molecule.properties.Complexity || 'N/A'} />
+                </div>
+              </section>
+
+              <section className="p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10">
+                <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <AlertCircle size={12} /> Scientific Metadata
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500">PubChem CID</span>
+                    <span className="text-slate-300 font-mono">{molecule.cid || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500">Isomeric SMILES</span>
+                    <span className="text-slate-300 font-mono truncate max-w-[150px]" title={molecule.smiles}>{molecule.smiles || 'N/A'}</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div className="p-6 border-t border-slate-800 bg-[#0B0E14]/50">
+              <button 
+                onClick={() => generateMoleculeReport(molecule)}
+                className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+              >
+                <Download size={18} />
+                Generate Dataset PDF
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function PropItem({ label, value }: { label: string, value: any }) {
+function ToggleButton({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
   return (
-    <div className="flex justify-between items-center py-1.5 border-b border-slate-800/50 last:border-0">
-      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{label}</span>
-      <span className="text-xs font-mono text-slate-300">{value ?? '—'}</span>
+    <button 
+      onClick={onClick}
+      className="flex items-center justify-between gap-4 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors group"
+    >
+      <span className="text-[10px] font-bold text-slate-300">{label}</span>
+      <div className={`w-8 h-4 rounded-full relative transition-colors ${active ? 'bg-blue-600' : 'bg-slate-600'}`}>
+        <motion.div 
+          animate={{ x: active ? 16 : 2 }}
+          initial={false}
+          className="absolute top-1 left-0 w-2 h-2 bg-white rounded-full shadow-sm"
+        />
+      </div>
+    </button>
+  );
+}
+
+function MetricCard({ label, value }: { label: string, value: string | number }) {
+  return (
+    <div className="p-3 bg-[#0B0E14] rounded-xl border border-slate-800">
+      <p className="text-[9px] font-bold text-slate-500 uppercase mb-1">{label}</p>
+      <p className="text-xs font-black text-slate-200">{value}</p>
     </div>
   );
 }

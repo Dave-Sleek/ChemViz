@@ -1,3 +1,4 @@
+import React from 'react';
 import { Search, FlaskConical, Beaker, Atom, Microscope, Calculator } from 'lucide-react';
 import { motion } from 'motion/react';
 import { formatFormula } from '../utils/formulaParser';
@@ -108,4 +109,3 @@ function FeatureCard({ icon, title, desc }: { icon: React.ReactNode, title: stri
   );
 }
 
-import React from 'react';

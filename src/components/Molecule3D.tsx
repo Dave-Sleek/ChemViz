@@ -1,6 +1,6 @@
-import { Suspense, useMemo, useRef, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Stars, Stage, Center } from '@react-three/drei';
+import { Suspense, useMemo, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
+import { OrbitControls, Stars, Stage, Center, Html, PerspectiveCamera, OrthographicCamera } from '@react-three/drei';
 import { type ConformerData } from '../types';
 import { getElementColor } from '../utils/chemistry';
 import * as THREE from 'three';
@@ -8,11 +8,41 @@ import * as THREE from 'three';
 interface Molecule3DProps {
   structure: ConformerData;
   autoRotate?: boolean;
+  showBondLengths?: boolean;
+  showBondAngles?: boolean;
+  projection?: 'perspective' | 'orthographic';
+}
+
+export interface Molecule3DHandle {
+  takeSnapshot: () => void;
+  resetCamera: () => void;
 }
 
 const ATOM_DETAIL = 32;
 
-export function Molecule3D({ structure, autoRotate = true }: Molecule3DProps) {
+export const Molecule3D = forwardRef<Molecule3DHandle, Molecule3DProps>(({ 
+  structure, 
+  autoRotate = true,
+  showBondLengths = false,
+  showBondAngles = false,
+  projection = 'perspective'
+}, ref) => {
+  const controlsRef = useRef<any>(null);
+  const snapshotRef = useRef<any>(null);
+
+  useImperativeHandle(ref, () => ({
+    resetCamera: () => {
+      if (controlsRef.current) {
+        controlsRef.current.reset();
+      }
+    },
+    takeSnapshot: () => {
+      if (snapshotRef.current) {
+        snapshotRef.current.takeSnapshot();
+      }
+    }
+  }));
+
   return (
     <div className="w-full h-full bg-[#0B0E14] relative group">
       <Suspense fallback={
@@ -26,21 +56,32 @@ export function Molecule3D({ structure, autoRotate = true }: Molecule3DProps) {
         <Canvas 
           shadows 
           dpr={[1, 2]} 
-          camera={{ position: [0, 0, 15], fov: 50 }}
-          gl={{ antialias: true, alpha: false }}
+          gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true }}
         >
           <color attach="background" args={['#0B0E14']} />
+          
+          {projection === 'perspective' ? (
+            <PerspectiveCamera makeDefault position={[0, 0, 15]} fov={50} />
+          ) : (
+            <OrthographicCamera makeDefault position={[0, 0, 15]} zoom={40} />
+          )}
+
           <ambientLight intensity={0.6} />
           <pointLight position={[10, 10, 10]} intensity={1.5} castShadow />
           <pointLight position={[-10, -10, -10]} intensity={0.5} />
           
-          <Stage adjustCamera intensity={0.5} environment="city" preset="rembrandt" contactShadow={false}>
+          <Stage adjustCamera intensity={0.5} environment="city" preset="rembrandt">
             <Center top>
-              <MoleculeContent structure={structure} />
+              <MoleculeContent 
+                structure={structure} 
+                showBondLengths={showBondLengths}
+                showBondAngles={showBondAngles}
+              />
             </Center>
           </Stage>
 
           <OrbitControls 
+            ref={controlsRef}
             enablePan={true} 
             enableZoom={true} 
             autoRotate={autoRotate} 
@@ -49,6 +90,8 @@ export function Molecule3D({ structure, autoRotate = true }: Molecule3DProps) {
           />
           
           <Stars radius={100} depth={50} count={1000} factor={4} saturation={0} fade speed={1} />
+          
+          <SnapshotHandler ref={snapshotRef} />
         </Canvas>
       </Suspense>
 
@@ -57,22 +100,45 @@ export function Molecule3D({ structure, autoRotate = true }: Molecule3DProps) {
         {Array.from(new Set(structure.atoms.map(a => a.element))).map(el => (
           <div key={el} className="flex items-center gap-1.5 text-[10px] font-bold text-white uppercase tracking-wider">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: getElementColor(el) }} />
-            {el}
+            <span>{el}</span>
           </div>
         ))}
       </div>
 
       <div className="absolute top-4 right-4 z-10">
         <div className="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold text-white uppercase tracking-widest">
-          3D Interactive Model
+          {projection} view
         </div>
       </div>
     </div>
   );
-}
+});
 
-function MoleculeContent({ structure }: { structure: ConformerData }) {
-  // Group atoms by element for instanced rendering
+const SnapshotHandler = forwardRef((_props, ref) => {
+  const { gl, scene, camera } = useThree();
+
+  useImperativeHandle(ref, () => ({
+    takeSnapshot: () => {
+      gl.render(scene, camera);
+      const link = document.createElement('a');
+      link.setAttribute('download', 'chemviz-snapshot.png');
+      link.setAttribute('href', gl.domElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'));
+      link.click();
+    }
+  }), [gl, scene, camera]);
+
+  return null;
+});
+
+function MoleculeContent({ 
+  structure, 
+  showBondLengths,
+  showBondAngles 
+}: { 
+  structure: ConformerData;
+  showBondLengths: boolean;
+  showBondAngles: boolean;
+}) {
   const atomsByElement = useMemo(() => {
     const groups: Record<string, typeof structure.atoms> = {};
     structure.atoms.forEach(atom => {
@@ -82,20 +148,70 @@ function MoleculeContent({ structure }: { structure: ConformerData }) {
     return groups;
   }, [structure]);
 
+  // Pre-calculate angles for triplets
+  const angles = useMemo(() => {
+    if (!showBondAngles) return [];
+    const tripletAngles: { pos: [number, number, number], angle: string }[] = [];
+    
+    // For each atom, find all unique pairs of neighbors
+    structure.atoms.forEach((atom, i) => {
+      const aid = i + 1;
+      const neighbors = structure.bonds
+        .filter(b => b.aid1 === aid || b.aid2 === aid)
+        .map(b => b.aid1 === aid ? b.aid2 : b.aid1);
+      
+      if (neighbors.length >= 2) {
+        const center = new THREE.Vector3(atom.x, atom.y, atom.z);
+        
+        for (let j = 0; j < neighbors.length; j++) {
+          for (let k = j + 1; k < neighbors.length; k++) {
+            const n1Index = neighbors[j] - 1;
+            const n2Index = neighbors[k] - 1;
+            const n1 = structure.atoms[n1Index];
+            const n2 = structure.atoms[n2Index];
+            
+            if (n1 && n2) {
+              const v1 = new THREE.Vector3(n1.x, n1.y, n1.z).sub(center);
+              const v2 = new THREE.Vector3(n2.x, n2.y, n2.z).sub(center);
+              
+              const angleRad = v1.angleTo(v2);
+              const angleDeg = (angleRad * 180 / Math.PI).toFixed(1);
+              
+              // Position label slightly offset from center towards the middle of neighbors
+              const labelPos = center.clone().add(v1.clone().add(v2).normalize().multiplyScalar(0.5));
+              tripletAngles.push({
+                pos: [labelPos.x, labelPos.y, labelPos.z],
+                angle: `${angleDeg}°`
+              });
+            }
+          }
+        }
+      }
+    });
+    
+    return tripletAngles;
+  }, [structure, showBondAngles]);
+
   return (
     <group>
-      {/* Optimized Atoms using InstancedMesh per element */}
       {Object.entries(atomsByElement).map(([element, atoms]) => (
         <AtomInstances key={element} element={element} atoms={atoms} />
       ))}
 
-      {/* Optimized Bonds using InstancedMesh */}
-      <BondInstances structure={structure} />
+      <BondInstances structure={structure} showBondLengths={showBondLengths} />
+
+      {showBondAngles && angles.map((a, i) => (
+        <Html key={`angle-${i}`} position={a.pos} center pointerEvents="none">
+          <div className="bg-emerald-500/80 backdrop-blur-sm text-white text-[8px] font-bold px-1 rounded-sm border border-emerald-400/50 whitespace-nowrap shadow-sm">
+            {a.angle}
+          </div>
+        </Html>
+      ))}
     </group>
   );
 }
 
-function AtomInstances({ element, atoms }: { element: string, atoms: typeof structure.atoms }) {
+function AtomInstances({ element, atoms }: { element: string, atoms: ConformerData['atoms'] }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const radius = getElementRadius(element);
   const color = getElementColor(element);
@@ -125,7 +241,7 @@ function AtomInstances({ element, atoms }: { element: string, atoms: typeof stru
   );
 }
 
-function BondInstances({ structure }: { structure: ConformerData }) {
+function BondInstances({ structure, showBondLengths }: { structure: ConformerData, showBondLengths: boolean }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
 
   const validBonds = useMemo(() => {
@@ -163,10 +279,31 @@ function BondInstances({ structure }: { structure: ConformerData }) {
   if (validBonds.length === 0) return null;
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, validBonds.length]} castShadow>
-      <cylinderGeometry args={[0.08, 0.08, 1, 12]} />
-      <meshStandardMaterial color="#475569" roughness={0.6} metalness={0.1} />
-    </instancedMesh>
+    <group>
+      <instancedMesh ref={meshRef} args={[undefined, undefined, validBonds.length]} castShadow>
+        <cylinderGeometry args={[0.08, 0.08, 1, 12]} />
+        <meshStandardMaterial color="#475569" roughness={0.6} metalness={0.1} />
+      </instancedMesh>
+
+      {showBondLengths && validBonds.map((bond, i) => {
+        const a1 = structure.atoms[bond.aid1 - 1];
+        const a2 = structure.atoms[bond.aid2 - 1];
+        if (!a1 || !a2) return null;
+        
+        const v1 = new THREE.Vector3(a1.x, a1.y, a1.z);
+        const v2 = new THREE.Vector3(a2.x, a2.y, a2.z);
+        const mid = v1.clone().add(v2).multiplyScalar(0.5);
+        const length = v1.distanceTo(v2).toFixed(2);
+        
+        return (
+          <Html key={`len-${i}`} position={[mid.x, mid.y, mid.z]} center pointerEvents="none">
+            <div className="bg-blue-500/80 backdrop-blur-sm text-white text-[8px] font-bold px-1 rounded-sm border border-blue-400/50 whitespace-nowrap shadow-sm">
+              {length}Å
+            </div>
+          </Html>
+        );
+      })}
+    </group>
   );
 }
 

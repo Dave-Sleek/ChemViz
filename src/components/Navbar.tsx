@@ -1,6 +1,7 @@
-import { Search, Moon, Sun, FlaskConical, Table, BrainCircuit, Heart, Info } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Moon, Sun, Menu, X, FlaskConical, Table, BrainCircuit, Heart, Info, Home as HomeIcon } from 'lucide-react';
 import { type ViewType } from '../types';
-import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface NavbarProps {
   view: ViewType;
@@ -12,23 +13,30 @@ interface NavbarProps {
 
 export function Navbar({ view, setView, toggleTheme, theme, onSearch }: NavbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(searchQuery);
     setSearchQuery('');
+    setIsMobileMenuOpen(false);
+  };
+
+  const navigate = (newView: ViewType) => {
+    setView(newView);
+    setIsMobileMenuOpen(false);
   };
 
   return (
-    <header className="flex items-center justify-between px-6 py-3 bg-[#161B22] border-b border-slate-700 h-[64px] shrink-0">
+    <header className="flex items-center justify-between px-6 py-3 bg-[#161B22] border-b border-slate-700 h-[64px] shrink-0 sticky top-0 z-50">
       <div 
         className="flex items-center gap-3 cursor-pointer group"
-        onClick={() => setView('home')}
+        onClick={() => navigate('home')}
       >
         <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
           CV
         </div>
-        <div className="hidden sm:block">
+        <div className="hidden xs:block">
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
             ChemViz 
             <span className="text-blue-400 font-light text-sm hidden lg:inline">Chemistry made visual</span>
@@ -36,24 +44,24 @@ export function Navbar({ view, setView, toggleTheme, theme, onSearch }: NavbarPr
         </div>
       </div>
 
-      <div className="flex-1 max-w-md mx-8 relative group">
+      <div className="flex-1 max-w-md mx-4 md:mx-8 relative group">
         <form onSubmit={handleSubmit}>
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-400 transition-colors" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search formula (e.g. H2SO4)..."
-            className="w-full bg-[#0B0E14] border border-slate-600 rounded-full py-1.5 px-4 pl-10 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-slate-200 placeholder:text-slate-500"
+            placeholder="Search formula..."
+            className="w-full bg-[#0B0E14] border border-slate-600 rounded-full py-1.5 px-4 pl-10 text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-slate-200 placeholder:text-slate-500"
           />
         </form>
       </div>
 
       <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-        <NavButton label="Explorer" active={view === 'explorer' || view === 'home'} onClick={() => setView('explorer')} />
-        <NavButton label="Periodic Table" active={view === 'table'} onClick={() => setView('table')} />
-        <NavButton label="Quiz" active={view === 'quiz'} onClick={() => setView('quiz')} />
-        <NavButton label="Favorites" active={view === 'favorites'} onClick={() => setView('favorites')} />
+        <NavButton label="Explorer" active={view === 'explorer' || view === 'home'} onClick={() => navigate('explorer')} />
+        <NavButton label="Periodic Table" active={view === 'table'} onClick={() => navigate('table')} />
+        <NavButton label="Quiz" active={view === 'quiz'} onClick={() => navigate('quiz')} />
+        <NavButton label="Favorites" active={view === 'favorites'} onClick={() => navigate('favorites')} />
       </nav>
 
       <div className="flex items-center gap-2 ml-4">
@@ -63,7 +71,34 @@ export function Navbar({ view, setView, toggleTheme, theme, onSearch }: NavbarPr
         >
           {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
         </button>
+        
+        <button 
+          className="md:hidden p-2 text-slate-400 hover:text-white"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="absolute top-[64px] left-0 right-0 bg-[#161B22] border-b border-slate-700 md:hidden overflow-hidden shadow-2xl"
+          >
+            <div className="p-4 flex flex-col gap-2">
+              <MobileNavItem label="Home" icon={<HomeIcon size={18} />} active={view === 'home'} onClick={() => navigate('home')} />
+              <MobileNavItem label="Explorer" icon={<FlaskConical size={18} />} active={view === 'explorer'} onClick={() => navigate('explorer')} />
+              <MobileNavItem label="Periodic Table" icon={<Table size={18} />} active={view === 'table'} onClick={() => navigate('table')} />
+              <MobileNavItem label="Quiz" icon={<BrainCircuit size={18} />} active={view === 'quiz'} onClick={() => navigate('quiz')} />
+              <MobileNavItem label="Favorites" icon={<Heart size={18} />} active={view === 'favorites'} onClick={() => navigate('favorites')} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
@@ -79,6 +114,20 @@ function NavButton({ label, active, onClick }: { label: string, active: boolean,
       }`}
     >
       {label}
+    </button>
+  );
+}
+
+function MobileNavItem({ label, icon, active, onClick }: { label: string, icon: React.ReactNode, active: boolean, onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+        active ? 'bg-blue-500/10 text-blue-400' : 'text-slate-400 hover:bg-slate-800'
+      }`}
+    >
+      {icon}
+      <span className="font-bold">{label}</span>
     </button>
   );
 }
