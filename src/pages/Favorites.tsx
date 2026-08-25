@@ -12,15 +12,15 @@ export function Favorites({ onSelect }: FavoritesProps) {
   const [recent, setRecent] = useState<string[]>([]);
 
   useEffect(() => {
-    const favs = JSON.parse(localStorage.getItem('favorite_molecules') || '[]');
+    const favs = JSON.parse(localStorage.getItem('favorite_molecules_v2') || '[]');
     const recs = JSON.parse(localStorage.getItem('recent_molecules') || '[]');
     setFavorites(favs);
     setRecent(recs);
   }, []);
 
   const removeFavorite = (formula: string) => {
-    const newFavs = favorites.filter(f => f !== formula);
-    localStorage.setItem('favorite_molecules', JSON.stringify(newFavs));
+    const newFavs = favorites.filter((f: any) => (typeof f === 'string' ? f : f.formula) !== formula);
+    localStorage.setItem('favorite_molecules_v2', JSON.stringify(newFavs));
     setFavorites(newFavs);
   };
 
@@ -45,15 +45,23 @@ export function Favorites({ onSelect }: FavoritesProps) {
         </div>
 
         {favorites.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {favorites.map((fav) => (
-              <MoleculeCard 
-                key={fav} 
-                formula={fav} 
-                onSelect={() => onSelect(fav)} 
-                onRemove={() => removeFavorite(fav)}
-              />
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {favorites.map((fav: any) => {
+              const formula = typeof fav === 'string' ? fav : fav.formula;
+              const name = typeof fav === 'string' ? fav : fav.name;
+              const cid = typeof fav === 'string' ? null : fav.cid;
+              
+              return (
+                <MoleculeCard 
+                  key={formula} 
+                  formula={formula} 
+                  name={name}
+                  cid={cid}
+                  onSelect={() => onSelect(formula)} 
+                  onRemove={() => removeFavorite(formula)}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="py-20 text-center bg-[#161B22]/50 border-2 border-dashed border-slate-800 rounded-3xl">
@@ -105,33 +113,44 @@ export function Favorites({ onSelect }: FavoritesProps) {
   );
 }
 
-function MoleculeCard({ formula, onSelect, onRemove }: { formula: string, onSelect: () => void, onRemove: () => void }) {
+function MoleculeCard({ formula, name, cid, onSelect, onRemove }: { formula: string, name: string, cid: number | null, onSelect: () => void, onRemove: () => void }) {
   return (
-    <div className="group bg-[#161B22] border border-slate-800 rounded-2xl p-6 hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/5 transition-all flex flex-col">
-      <div className="flex justify-between items-start mb-6">
-        <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center font-black text-blue-500 border border-blue-500/20">
-          {formula.substring(0, 1)}
+    <div className="group bg-[#161B22] border border-slate-800 rounded-3xl p-5 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all flex flex-col h-full">
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex flex-col">
+          <h3 className="text-xl font-black text-white group-hover:text-blue-400 transition-colors leading-tight truncate max-w-[150px]">
+            {name}
+          </h3>
+          <p className="text-blue-500 font-mono text-sm font-bold">{formatFormula(formula)}</p>
         </div>
         <button 
           onClick={onRemove}
-          className="p-2 text-slate-700 hover:text-red-500 transition-colors"
+          className="p-2 text-slate-700 hover:text-red-500 transition-colors bg-[#0B0E14] rounded-xl border border-slate-800"
         >
-          <Trash2 size={20} />
+          <Trash2 size={16} />
         </button>
       </div>
       
-      <div className="mb-8">
-        <h3 className="text-3xl font-black text-white group-hover:text-blue-400 transition-colors leading-none mb-2">
-          {formatFormula(formula)}
-        </h3>
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Validated Compound</p>
+      <div className="flex-1 min-h-[160px] bg-white rounded-2xl p-4 mb-5 flex items-center justify-center relative overflow-hidden group/thumb shadow-inner">
+        {cid ? (
+          <img 
+            src={`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/PNG`} 
+            alt={name}
+            className="max-w-full max-h-full object-contain mix-blend-multiply group-hover/thumb:scale-110 transition-transform duration-500"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <FlaskConical size={32} className="text-slate-200" />
+        )}
+        <div className="absolute inset-0 bg-blue-600/0 group-hover/thumb:bg-blue-600/5 transition-colors" />
       </div>
 
       <button 
         onClick={onSelect}
-        className="w-full py-4 bg-[#0B0E14] text-slate-400 rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-all border border-slate-800 hover:border-blue-600 shadow-inner"
+        className="w-full py-3.5 bg-[#0B0E14] text-slate-400 rounded-2xl font-bold hover:bg-blue-600 hover:text-white transition-all border border-slate-800 hover:border-blue-600 shadow-sm flex items-center justify-center gap-2"
       >
-        Re-visualize Structure
+        <span>Analyze Structure</span>
+        <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
       </button>
     </div>
   );

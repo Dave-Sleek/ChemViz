@@ -49,13 +49,18 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
   const [showReactionSim, setShowReactionSim] = useState(false);
   const [moleculeHistory, setMoleculeHistory] = useState<MoleculeData[]>([]);
   
+  // Unit Converter State
+  const [calcMass, setCalcMass] = useState<string>('');
+  const [calcMoles, setCalcMoles] = useState<string>('');
+  const [calcDirection, setCalcDirection] = useState<'mass-to-moles' | 'moles-to-mass'>('mass-to-moles');
+  
   const molecule3DRef = useRef<Molecule3DHandle>(null);
   const dragControls = useDragControls();
 
   useEffect(() => {
     if (molecule) {
-      const favorites = JSON.parse(localStorage.getItem('favorite_molecules') || '[]');
-      setIsFavorite(favorites.includes(molecule.formula));
+      const favorites = JSON.parse(localStorage.getItem('favorite_molecules_v2') || '[]');
+      setIsFavorite(favorites.some((f: any) => f.formula === molecule.formula));
 
       // Update history
       setMoleculeHistory(prev => {
@@ -82,14 +87,19 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
 
   const toggleFavorite = () => {
     if (!molecule) return;
-    const favorites = JSON.parse(localStorage.getItem('favorite_molecules') || '[]');
+    const favorites = JSON.parse(localStorage.getItem('favorite_molecules_v2') || '[]');
     let newFavorites;
     if (isFavorite) {
-      newFavorites = favorites.filter((f: string) => f !== molecule.formula);
+      newFavorites = favorites.filter((f: any) => f.formula !== molecule.formula);
     } else {
-      newFavorites = [...favorites, molecule.formula];
+      newFavorites = [...favorites, { 
+        formula: molecule.formula, 
+        name: molecule.name, 
+        cid: molecule.cid,
+        weight: molecule.molecularWeight 
+      }];
     }
-    localStorage.setItem('favorite_molecules', JSON.stringify(newFavorites));
+    localStorage.setItem('favorite_molecules_v2', JSON.stringify(newFavorites));
     setIsFavorite(!isFavorite);
   };
 
@@ -202,6 +212,74 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
 
               <section>
                 <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Calculator size={12} /> Unit Converter
+                </h3>
+                <div className="p-4 bg-[#0B0E14] rounded-2xl border border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between gap-2 p-1 bg-slate-900 rounded-lg">
+                    <button 
+                      onClick={() => setCalcDirection('mass-to-moles')}
+                      className={`flex-1 text-[9px] font-black py-1.5 rounded-md transition-all ${calcDirection === 'mass-to-moles' ? 'bg-blue-600 text-white' : 'text-slate-500'}`}
+                    >
+                      MASS → MOLES
+                    </button>
+                    <button 
+                      onClick={() => setCalcDirection('moles-to-mass')}
+                      className={`flex-1 text-[9px] font-black py-1.5 rounded-md transition-all ${calcDirection === 'moles-to-mass' ? 'bg-blue-600 text-white' : 'text-slate-500'}`}
+                    >
+                      MOLES → MASS
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {calcDirection === 'mass-to-moles' ? (
+                      <>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-500 uppercase ml-1">Input Mass (g)</label>
+                          <input 
+                            type="number"
+                            value={calcMass}
+                            onChange={(e) => {
+                              setCalcMass(e.target.value);
+                              const moles = parseFloat(e.target.value) / molecule.molecularWeight;
+                              setCalcMoles(isNaN(moles) ? '' : moles.toFixed(4));
+                            }}
+                            className="w-full bg-[#161B22] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 focus:outline-none"
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div className="pt-2 border-t border-slate-800/50 flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-slate-500">Result:</span>
+                          <span className="text-xs font-black text-blue-400">{calcMoles || '0.0000'} <span className="text-[9px] font-medium opacity-60">mol</span></span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-500 uppercase ml-1">Input Moles (mol)</label>
+                          <input 
+                            type="number"
+                            value={calcMoles}
+                            onChange={(e) => {
+                              setCalcMoles(e.target.value);
+                              const mass = parseFloat(e.target.value) * molecule.molecularWeight;
+                              setCalcMass(isNaN(mass) ? '' : mass.toFixed(4));
+                            }}
+                            className="w-full bg-[#161B22] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 focus:outline-none"
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div className="pt-2 border-t border-slate-800/50 flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-slate-500">Result:</span>
+                          <span className="text-xs font-black text-emerald-400">{calcMass || '0.0000'} <span className="text-[9px] font-medium opacity-60">g</span></span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                   <History size={12} /> Advanced Labs
                 </h3>
                 <div className="flex flex-col gap-2">
@@ -301,60 +379,65 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
 
         {/* 3D Visualization Control Panel */}
         {activeTab === '3d' && (
-          <div className="absolute top-24 left-6 flex flex-col gap-2 z-30">
-            <motion.div 
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              className="bg-[#161B22]/90 backdrop-blur-md p-3 rounded-2xl border border-white/5 shadow-2xl flex flex-col gap-3"
-            >
-              <div className="pb-2 border-b border-white/5">
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">3D Controls</span>
-              </div>
-              
-              <ToggleButton 
-                active={showBondLengths} 
-                onClick={() => setShowBondLengths(!showBondLengths)}
-                label="Bond Lengths"
-              />
-              <ToggleButton 
-                active={showBondAngles} 
-                onClick={() => setShowBondAngles(!showBondAngles)}
-                label="Bond Angles"
-              />
-              <ToggleButton 
-                active={autoRotate} 
-                onClick={() => setAutoRotate(!autoRotate)}
-                label="Auto Rotation"
-              />
-              
-              <div className="pt-2 border-t border-white/5 flex flex-col gap-2">
-                <button 
-                  onClick={() => setProjection(p => p === 'perspective' ? 'orthographic' : 'perspective')}
-                  className="flex items-center justify-between gap-4 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors text-[10px] font-bold text-slate-300"
-                >
-                  Projection: {projection === 'perspective' ? 'Persp' : 'Ortho'}
-                  <Maximize2 size={12} />
-                </button>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <button 
-                    onClick={handleResetCamera}
-                    className="p-2 bg-slate-800/50 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1"
-                    title="Reset Camera"
-                  >
-                    <RotateCcw size={14} />
-                  </button>
-                  <button 
-                    onClick={handleSnapshot}
-                    className="p-2 bg-blue-600/20 hover:bg-blue-600/30 rounded-lg text-blue-400 hover:text-blue-300 transition-colors flex items-center justify-center gap-1"
-                    title="Take Snapshot"
-                  >
-                    <Camera size={14} />
-                  </button>
+          <>
+            <div className="absolute top-24 left-6 flex flex-col gap-2 z-30">
+              <motion.div 
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                className="bg-[#161B22]/90 backdrop-blur-md p-3 rounded-2xl border border-white/5 shadow-2xl flex flex-col gap-3"
+              >
+                <div className="pb-2 border-b border-white/5">
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">3D Controls</span>
                 </div>
-              </div>
-            </motion.div>
-          </div>
+                
+                <ToggleButton 
+                  active={showBondLengths} 
+                  onClick={() => setShowBondLengths(!showBondLengths)}
+                  label="Bond Lengths"
+                />
+                <ToggleButton 
+                  active={showBondAngles} 
+                  onClick={() => setShowBondAngles(!showBondAngles)}
+                  label="Bond Angles"
+                />
+                <ToggleButton 
+                  active={autoRotate} 
+                  onClick={() => setAutoRotate(!autoRotate)}
+                  label="Auto Rotation"
+                />
+                
+                <div className="pt-2 border-t border-white/5 flex flex-col gap-2">
+                  <button 
+                    onClick={() => setProjection(p => p === 'perspective' ? 'orthographic' : 'perspective')}
+                    className="flex items-center justify-between gap-4 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors text-[10px] font-bold text-slate-300"
+                  >
+                    Projection: {projection === 'perspective' ? 'Persp' : 'Ortho'}
+                    <Maximize2 size={12} />
+                  </button>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      onClick={handleResetCamera}
+                      className="p-2 bg-slate-800/50 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1"
+                      title="Reset Camera"
+                    >
+                      <RotateCcw size={14} />
+                    </button>
+                    <button 
+                      onClick={handleSnapshot}
+                      className="p-2 bg-blue-600/20 hover:bg-blue-600/30 rounded-lg text-blue-400 hover:text-blue-300 transition-colors flex items-center justify-center gap-1"
+                      title="Take Snapshot"
+                    >
+                      <Camera size={14} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Interactive Visual Legend */}
+            <VisualLegend molecule={molecule} />
+          </>
         )}
 
         <div className="flex-1 relative overflow-hidden">
@@ -545,6 +628,45 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+import { getElementColor } from '../utils/chemistry';
+
+function VisualLegend({ molecule }: { molecule: MoleculeData }) {
+  // Extract unique elements from the molecule
+  const uniqueElements = Array.from(new Set(molecule.elements.map(e => e.symbol)));
+
+  return (
+    <motion.div 
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      className="absolute top-24 right-6 z-30 flex flex-col gap-2"
+    >
+      <div className="bg-[#161B22]/90 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-2xl min-w-[120px]">
+        <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 pb-2 border-b border-white/5">Element Legend</h4>
+        <div className="space-y-3">
+          {uniqueElements.map(symbol => {
+            const color = getElementColor(symbol);
+            return (
+              <div key={symbol} className="flex items-center gap-3">
+                <div 
+                  className="w-3 h-3 rounded-full shadow-lg"
+                  style={{ 
+                    backgroundColor: color,
+                    boxShadow: `0 0 8px ${color}40`
+                  }}
+                />
+                <span className="text-[10px] font-black text-slate-300">{symbol}</span>
+                <span className="text-[8px] font-medium text-slate-600 uppercase ml-auto">
+                  {molecule.elements.find(e => e.symbol === symbol)?.count}x
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </motion.div>
   );
 }
 

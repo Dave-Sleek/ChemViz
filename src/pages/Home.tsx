@@ -3,6 +3,8 @@ import { Search, FlaskConical, Beaker, Atom, Microscope, Calculator } from 'luci
 import { motion } from 'motion/react';
 import { formatFormula } from '../utils/formulaParser';
 
+import { SearchBar } from '../components/SearchBar';
+
 interface HomeProps {
   onSearch: (query: string) => void;
   loading: boolean;
@@ -12,13 +14,6 @@ interface HomeProps {
 const EXAMPLES = ['H2O', 'CO2', 'CH4', 'NH3', 'NaCl', 'C6H12O6', 'H2SO4', 'CaCO3'];
 
 export function Home({ onSearch, loading, error }: HomeProps) {
-  const [query, setQuery] = React.useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(query);
-  };
-
   return (
     <div className="flex flex-col items-center justify-center min-h-full text-center max-w-4xl mx-auto py-20 px-6 bg-[#0B0E14]">
       <motion.div
@@ -53,26 +48,11 @@ export function Home({ onSearch, loading, error }: HomeProps) {
         transition={{ delay: 0.2 }}
         className="w-full max-w-2xl mb-16"
       >
-        <form onSubmit={handleSubmit} className="relative group">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Enter a formula (e.g. C6H12O6)..."
-            className="w-full text-lg md:text-xl bg-[#161B22] border-2 border-slate-700 rounded-2xl py-6 pl-8 pr-16 shadow-2xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none text-white placeholder:text-slate-600"
-          />
-          <button 
-            type="submit"
-            disabled={loading}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition-all disabled:opacity-50 shadow-lg shadow-blue-600/20"
-          >
-            {loading ? (
-              <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Search size={28} />
-            )}
-          </button>
-        </form>
+        <SearchBar 
+          onSearch={onSearch} 
+          size="lg" 
+          placeholder="Enter a formula (e.g. C6H12O6)..." 
+        />
         {error && (
           <p className="mt-4 text-red-400 text-sm font-bold tracking-tight">{error}</p>
         )}

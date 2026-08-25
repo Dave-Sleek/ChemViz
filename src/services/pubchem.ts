@@ -89,6 +89,42 @@ const CORE_MOLECULES: Record<string, MoleculeData> = {
         { aid1: 1, aid2: 4, order: 1 }
       ]
     }
+  },
+  'aspirin': {
+    formula: 'C9H8O4',
+    name: 'Aspirin',
+    cid: 2244,
+    molecularWeight: 180.16,
+    elements: [{ symbol: 'C', count: 9 }, { symbol: 'H', count: 8 }, { symbol: 'O', count: 4 }],
+    properties: { Complexity: 212, Charge: 0, HBondDonorCount: 1, HBondAcceptorCount: 4 },
+    smiles: 'CC(=O)OC1=CC=CC=C1C(=O)O',
+    description: 'Aspirin, also known as acetylsalicylic acid (ASA), is a medication used to reduce pain, fever, or inflammation. It is also used as a blood thinner to prevent heart attacks and strokes.',
+    structure3d: {
+      atoms: [
+        { element: 'C', x: -0.02, y: 0.05, z: 0.01 },
+        { element: 'C', x: 1.34, y: 0.03, z: -0.01 },
+        { element: 'C', x: 2.05, y: 1.25, z: -0.01 },
+        { element: 'C', x: 1.39, y: 2.45, z: 0.01 },
+        { element: 'C', x: 0.01, y: 2.46, z: 0.02 },
+        { element: 'C', x: -0.71, y: 1.27, z: 0.02 },
+        { element: 'C', x: 2.08, y: -1.25, z: -0.03 },
+        { element: 'O', x: 1.48, y: -2.31, z: -0.04 },
+        { element: 'O', x: 3.42, y: -1.18, z: -0.04 },
+        { element: 'O', x: -0.71, y: -1.13, z: 0.03 },
+        { element: 'C', x: -2.06, y: -1.12, z: 0.04 },
+        { element: 'O', x: -2.69, y: -0.08, z: 0.04 },
+        { element: 'C', x: -2.71, y: -2.48, z: 0.06 }
+      ],
+      bonds: [
+        { aid1: 1, aid2: 2, order: 2 }, { aid1: 2, aid2: 3, order: 1 },
+        { aid1: 3, aid2: 4, order: 2 }, { aid1: 4, aid2: 5, order: 1 },
+        { aid1: 5, aid2: 6, order: 2 }, { aid1: 6, aid2: 1, order: 1 },
+        { aid1: 2, aid2: 7, order: 1 }, { aid1: 7, aid2: 8, order: 2 },
+        { aid1: 7, aid2: 9, order: 1 }, { aid1: 1, aid2: 10, order: 1 },
+        { aid1: 10, aid2: 11, order: 1 }, { aid1: 11, aid2: 12, order: 2 },
+        { aid1: 11, aid2: 13, order: 1 }
+      ]
+    }
   }
 };
 

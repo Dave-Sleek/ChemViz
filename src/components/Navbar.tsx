@@ -3,6 +3,8 @@ import { Search, Moon, Sun, Menu, X, FlaskConical, Table, BrainCircuit, Heart, I
 import { type ViewType } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
+import { SearchBar } from './SearchBar';
+
 interface NavbarProps {
   view: ViewType;
   setView: (view: ViewType) => void;
@@ -12,15 +14,7 @@ interface NavbarProps {
 }
 
 export function Navbar({ view, setView, toggleTheme, theme, onSearch }: NavbarProps) {
-  const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(searchQuery);
-    setSearchQuery('');
-    setIsMobileMenuOpen(false);
-  };
 
   const navigate = (newView: ViewType) => {
     setView(newView);
@@ -44,17 +38,8 @@ export function Navbar({ view, setView, toggleTheme, theme, onSearch }: NavbarPr
         </div>
       </div>
 
-      <div className="flex-1 max-w-md mx-4 md:mx-8 relative group">
-        <form onSubmit={handleSubmit}>
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-400 transition-colors" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search formula..."
-            className="w-full bg-[#0B0E14] border border-slate-600 rounded-full py-1.5 px-4 pl-10 text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-slate-200 placeholder:text-slate-500"
-          />
-        </form>
+      <div className="flex-1 max-w-md mx-4 md:mx-8">
+        <SearchBar onSearch={onSearch} />
       </div>
 
       <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
