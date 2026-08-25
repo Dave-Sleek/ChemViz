@@ -84,7 +84,7 @@ export function Quiz() {
   };
 
   return (
-    <div className="h-full flex items-center justify-center p-6 bg-[#0B0E14]">
+    <div className="min-h-full flex items-center justify-center p-6 bg-[#0B0E14] overflow-x-auto overflow-y-auto">
       <AnimatePresence mode="wait">
         {currentStep === 'start' && (
           <motion.div
@@ -130,7 +130,7 @@ export function Quiz() {
 
             <div className="bg-[#161B22] border border-slate-700 p-10 rounded-3xl shadow-xl mb-8">
               <h2 className="text-2xl font-bold text-white mb-10 leading-tight">{QUESTIONS[currentIndex].text}</h2>
-              <div className="grid grid-cols-1 gap-4">
+              <div className="flex sm:grid sm:grid-cols-1 gap-4 overflow-x-auto pb-4 no-scrollbar">
                 {QUESTIONS[currentIndex].options.map((opt, idx) => {
                   let statusClass = "border-slate-800 bg-[#0D1117] text-slate-300 hover:border-slate-600 hover:bg-[#1C2128]";
                   if (isAnswered) {
@@ -148,11 +148,11 @@ export function Quiz() {
                       key={idx}
                       disabled={isAnswered}
                       onClick={() => handleOptionClick(idx)}
-                      className={`p-5 rounded-xl border-2 text-left font-bold transition-all flex items-center justify-between group ${statusClass}`}
+                      className={`p-5 rounded-xl border-2 text-left font-bold transition-all flex items-center justify-between group min-w-[200px] sm:min-w-0 shrink-0 ${statusClass}`}
                     >
                       <span>{formatFormula(opt)}</span>
-                      {isAnswered && idx === QUESTIONS[currentIndex].correct && <CheckCircle2 size={24} />}
-                      {isAnswered && idx === selectedOption && idx !== QUESTIONS[currentIndex].correct && <XCircle size={24} />}
+                      {isAnswered && idx === QUESTIONS[currentIndex].correct && <CheckCircle2 size={24} className="shrink-0 ml-2" />}
+                      {isAnswered && idx === selectedOption && idx !== QUESTIONS[currentIndex].correct && <XCircle size={24} className="shrink-0 ml-2" />}
                     </button>
                   );
                 })}

@@ -7,45 +7,50 @@ const PUBCHEM_BASE_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug';
 export async function fetchMoleculeByFormula(input: string): Promise<MoleculeData | null> {
   if (!input.trim()) return null;
   
+  const trimmedInput = input.trim();
+
   try {
-    console.log(`Searching PubChem for: ${input}`);
-    // 1. Find CID by formula or name
-    const cidUrl = `${PUBCHEM_BASE_URL}/compound/name/${encodeURIComponent(input)}/cids/JSON`;
+    console.log(`Searching PubChem for: ${trimmedInput}`);
+
+    // 0. If input is a direct CID (numeric)
+    if (/^\d+$/.test(trimmedInput)) {
+      return fetchMoleculeByCID(parseInt(trimmedInput, 10), trimmedInput);
+    }
+
+    // 1. Find CID by name
+    const cidUrl = `${PUBCHEM_BASE_URL}/compound/name/${encodeURIComponent(trimmedInput)}/cids/JSON`;
     const cidResponse = await fetch(cidUrl, {
       headers: {
         'Accept': 'application/json'
       }
     });
     
-    if (!cidResponse.ok) {
-      console.warn(`CID by name failed for ${input}: ${cidResponse.status} ${cidResponse.statusText}`);
-      // Try by formula if name fails
-      const formulaUrl = `${PUBCHEM_BASE_URL}/compound/fastformula/${encodeURIComponent(input)}/cids/JSON`;
-      const cidByFormulaResponse = await fetch(formulaUrl, {
-        headers: { 'Accept': 'application/json' }
-      });
-      
-      if (!cidByFormulaResponse.ok) {
-        console.warn(`CID by formula failed for ${input}: ${cidByFormulaResponse.status} ${cidByFormulaResponse.statusText}`);
-        return fallbackMolecule(input);
+    if (cidResponse.ok) {
+      const cidData = await cidResponse.json();
+      if (cidData.IdentifierList?.CID?.[0]) {
+        return fetchMoleculeByCID(cidData.IdentifierList.CID[0], trimmedInput);
       }
-      
+    }
+
+    // 2. Try by formula if name fails
+    console.warn(`CID by name failed for ${trimmedInput}, trying fastformula lookup...`);
+    const formulaUrl = `${PUBCHEM_BASE_URL}/compound/fastformula/${encodeURIComponent(trimmedInput)}/cids/JSON`;
+    const cidByFormulaResponse = await fetch(formulaUrl, {
+      headers: { 'Accept': 'application/json' }
+    });
+    
+    if (cidByFormulaResponse.ok) {
       const cidByFormulaData = await cidByFormulaResponse.json();
-      if (!cidByFormulaData.IdentifierList?.CID?.[0]) {
-        return fallbackMolecule(input);
+      if (cidByFormulaData.IdentifierList?.CID?.[0]) {
+        return fetchMoleculeByCID(cidByFormulaData.IdentifierList.CID[0], trimmedInput);
       }
-      return fetchMoleculeByCID(cidByFormulaData.IdentifierList.CID[0], input);
     }
-
-    const cidData = await cidResponse.json();
-    if (!cidData.IdentifierList?.CID?.[0]) {
-      return fallbackMolecule(input);
-    }
-
-    return fetchMoleculeByCID(cidData.IdentifierList.CID[0], input);
+    
+    console.error(`All PubChem lookups failed for: ${trimmedInput}`);
+    return fallbackMolecule(trimmedInput);
   } catch (error) {
     console.error('Network or Parse error in fetchMoleculeByFormula:', error);
-    return fallbackMolecule(input);
+    return fallbackMolecule(trimmedInput);
   }
 }
 
@@ -58,12 +63,18 @@ async function fetchMoleculeByCID(cid: number, originalInput: string): Promise<M
       headers: { 'Accept': 'application/json' }
     });
     
-    if (!propsResponse.ok) {
-      throw new Error(`Properties fetch failed: ${propsResponse.status}`);
+    let props;
+    if (propsResponse.ok) {
+      const propsData = await propsResponse.json();
+      props = propsData.PropertyTable.Properties[0];
+    } else {
+      console.warn(`Complex properties fetch failed for CID ${cid}, trying basic info...`);
+      const basicUrl = `${PUBCHEM_BASE_URL}/compound/cid/${cid}/property/MolecularFormula,MolecularWeight/JSON`;
+      const basicResponse = await fetch(basicUrl, { headers: { 'Accept': 'application/json' } });
+      if (!basicResponse.ok) throw new Error("Could not retrieve even basic molecular properties.");
+      const basicData = await basicResponse.json();
+      props = basicData.PropertyTable.Properties[0];
     }
-    
-    const propsData = await propsResponse.json();
-    const props = propsData.PropertyTable.Properties[0];
 
     // 3. Get Description
     let description = '';
@@ -138,25 +149,44 @@ async function fetchMoleculeByCID(cid: number, originalInput: string): Promise<M
 }
 
 function fallbackMolecule(input: string): MoleculeData | null {
+  if (!input.trim()) return null;
+
   // Check if input looks like a formula
   const parsed = parseFormula(input);
-  if (parsed.length === 0) return null;
+  
+  if (parsed.length > 0) {
+    let totalWeight = 0;
+    let hasUnknownElement = false;
+    
+    for (const item of parsed) {
+      const el = elements.find(e => e.symbol === item.symbol);
+      if (el) {
+        totalWeight += el.atomic_mass * item.count;
+      } else {
+        hasUnknownElement = true;
+        break;
+      }
+    }
 
-  let totalWeight = 0;
-  for (const item of parsed) {
-    const el = elements.find(e => e.symbol === item.symbol);
-    if (el) {
-      totalWeight += el.atomic_mass * item.count;
-    } else {
-      return null; // Unknown element
+    if (!hasUnknownElement) {
+      return {
+        formula: input,
+        name: `Calculated: ${input}`,
+        molecularWeight: totalWeight,
+        elements: parsed,
+        properties: {},
+        description: "This structure was locally synthesized based on the provided chemical formula as the external scientific record was not found."
+      };
     }
   }
 
+  // Final fallback for names that don't match or failed formulas
   return {
-    formula: input,
-    name: 'Unknown Compound',
-    molecularWeight: totalWeight,
-    elements: parsed,
+    formula: '?',
+    name: input,
+    molecularWeight: 0,
+    elements: [],
     properties: {},
+    description: "The requested compound could not be located in the scientific database. Please verify the formula (e.g., C6H12O6) or name (e.g., Ethanol)."
   };
 }

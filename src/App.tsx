@@ -56,7 +56,7 @@ export default function App() {
     <div className="flex flex-col h-screen w-full bg-[#0B0E14] text-slate-200 overflow-hidden font-sans selection:bg-blue-500/30">
       <Navbar view={view} setView={setView} toggleTheme={toggleTheme} theme={theme} onSearch={handleSearch} />
       
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={view}

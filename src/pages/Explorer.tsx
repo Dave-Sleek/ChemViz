@@ -14,7 +14,8 @@ import {
   Box,
   Maximize2,
   X,
-  GripHorizontal
+  GripHorizontal,
+  Heart
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { generateMoleculeReport } from '../utils/report';
