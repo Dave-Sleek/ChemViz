@@ -1,0 +1,429 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  BookOpen, 
+  Atom, 
+  Zap, 
+  FlaskConical, 
+  ChevronRight, 
+  Trophy, 
+  CheckCircle2, 
+  ArrowLeft,
+  GraduationCap,
+  Sparkles,
+  Lightbulb
+} from 'lucide-react';
+
+interface Lesson {
+  id: string;
+  title: string;
+  category: string;
+  duration: string;
+  icon: React.ReactNode;
+  description: string;
+  content: {
+    heading: string;
+    text: string;
+    highlights: string[];
+  }[];
+  questions: {
+    question: string;
+    options: string[];
+    answer: number;
+  }[];
+}
+
+const LESSONS: Lesson[] = [
+  {
+    id: 'intro-chem',
+    title: 'The Atomic World',
+    category: 'Foundations',
+    duration: '10 min',
+    icon: <Atom size={20} />,
+    description: 'Learn the fundamental building blocks of matter and the structure of atoms.',
+    content: [
+      {
+        heading: 'What is Chemistry?',
+        text: 'Chemistry is the scientific study of the properties and behavior of matter. It is a physical science within the natural sciences that studies the chemical elements that make up matter and compounds made of atoms, molecules, and ions.',
+        highlights: ['Matter consists of atoms', 'Chemistry is the "Central Science"', 'Interactions define behavior']
+      },
+      {
+        heading: 'The Atom',
+        text: 'An atom is the smallest unit of ordinary matter that forms a chemical element. Every solid, liquid, gas, and plasma is composed of neutral or ionized atoms.',
+        highlights: ['Protons (Positive)', 'Neutrons (Neutral)', 'Electrons (Negative)']
+      }
+    ],
+    questions: [
+      {
+        question: "What particle in an atom carries a positive charge?",
+        options: ["Electron", "Neutron", "Proton", "Molecule"],
+        answer: 2
+      }
+    ]
+  },
+  {
+    id: 'bonding',
+    title: 'Chemical Bonding',
+    category: 'Advanced',
+    duration: '15 min',
+    icon: <Zap size={20} />,
+    description: 'Explore how atoms join together to create stable molecules.',
+    content: [
+      {
+        heading: 'Ionic vs Covalent',
+        text: 'A chemical bond is a lasting attraction between atoms, ions or molecules that enables the formation of chemical compounds.',
+        highlights: ['Ionic: Transfer of electrons', 'Covalent: Sharing of electrons', 'Metallic: Sea of electrons']
+      }
+    ],
+    questions: [
+      {
+        question: "Which type of bond involves the sharing of electrons?",
+        options: ["Ionic", "Covalent", "Metallic", "Hydrogen"],
+        answer: 1
+      }
+    ]
+  },
+  {
+    id: 'states-of-matter',
+    title: 'States of Matter',
+    category: 'Foundations',
+    duration: '12 min',
+    icon: <FlaskConical size={20} />,
+    description: 'Understand the different phases of matter and how they transition.',
+    content: [
+      {
+        heading: 'Phases and Kinetic Theory',
+        text: 'Matter exists in different physical forms called states. The four fundamental states are solid, liquid, gas, and plasma.',
+        highlights: ['Solids have fixed shapes', 'Liquids flow and adapt', 'Gases expand to fill space']
+      },
+      {
+        heading: 'Phase Transitions',
+        text: 'Transitions between states occur when energy (heat) is added or removed from a substance.',
+        highlights: ['Melting/Freezing', 'Boiling/Condensation', 'Sublimation/Deposition']
+      }
+    ],
+    questions: [
+      {
+        question: "What is the process called when a solid turns directly into a gas?",
+        options: ["Evaporation", "Melting", "Sublimation", "Condensation"],
+        answer: 2
+      }
+    ]
+  },
+  {
+    id: 'periodic-trends',
+    title: 'Periodic Trends',
+    category: 'Foundations',
+    duration: '18 min',
+    icon: <Sparkles size={20} />,
+    description: 'Master the organization of the periodic table and predict element behavior.',
+    content: [
+      {
+        heading: 'Groups and Periods',
+        text: 'Elements are arranged by increasing atomic number. Vertical columns are called Groups, and horizontal rows are called Periods.',
+        highlights: ['Groups share characteristics', 'Periods denote energy levels', '118 unique elements']
+      }
+    ],
+    questions: [
+      {
+        question: "Elements in the same vertical column are part of the same:",
+        options: ["Period", "Group", "Block", "Shell"],
+        answer: 1
+      }
+    ]
+  },
+  {
+    id: 'organic-intro',
+    title: 'Organic Chemistry Intro',
+    category: 'Organic',
+    duration: '20 min',
+    icon: <Lightbulb size={20} />,
+    description: 'Introduction to carbon-based molecules and the chemistry of life.',
+    content: [
+      {
+        heading: 'Carbon: The Versatile Element',
+        text: 'Organic chemistry is the study of carbon-based compounds. Carbon is unique because it can form four stable covalent bonds.',
+        highlights: ['Carbon backbone', 'Hydrocarbons (C and H)', 'Functional groups']
+      }
+    ],
+    questions: [
+      {
+        question: "How many covalent bonds does carbon typically form?",
+        options: ["Two", "Three", "Four", "Six"],
+        answer: 2
+      }
+    ]
+  },
+  {
+    id: 'thermo',
+    title: 'Thermodynamics',
+    category: 'Advanced',
+    duration: '25 min',
+    icon: <Zap size={20} />,
+    description: 'Study of heat, energy, and work in chemical systems.',
+    content: [
+      {
+        heading: 'Laws of Thermodynamics',
+        text: 'Energy cannot be created or destroyed, only transformed. Entropy always increases in a closed system.',
+        highlights: ['First Law: Conservation', 'Second Law: Entropy', 'Enthalpy (H)']
+      }
+    ],
+    questions: [
+      {
+        question: "Which law states that energy cannot be created or destroyed?",
+        options: ["First Law", "Second Law", "Third Law", "Zeroth Law"],
+        answer: 0
+      }
+    ]
+  },
+  {
+    id: 'kinetics',
+    title: 'Chemical Kinetics',
+    category: 'Advanced',
+    duration: '15 min',
+    icon: <Zap size={20} />,
+    description: 'Understanding the speed and mechanisms of chemical reactions.',
+    content: [
+      {
+        heading: 'Reaction Rates',
+        text: 'The rate of a chemical reaction is the speed at which reactants are converted into products.',
+        highlights: ['Catalysts speed up reactions', 'Concentration affects rate', 'Activation energy']
+      }
+    ],
+    questions: [
+      {
+        question: "What substance speeds up a reaction without being consumed?",
+        options: ["Reactant", "Product", "Catalyst", "Inhibitor"],
+        answer: 2
+      }
+    ]
+  },
+  {
+    id: 'acids-bases',
+    title: 'Acids & Bases',
+    category: 'Foundations',
+    duration: '15 min',
+    icon: <FlaskConical size={20} />,
+    description: 'Master the pH scale and the behavior of acidic and basic solutions.',
+    content: [
+      {
+        heading: 'The pH Scale',
+        text: 'pH is a measure of how acidic or basic water is. The range goes from 0 to 14, with 7 being neutral.',
+        highlights: ['pH < 7 is acidic', 'pH > 7 is basic', 'Logarithmic scale']
+      }
+    ],
+    questions: [
+      {
+        question: "A solution with a pH of 3 is considered:",
+        options: ["Neutral", "Basic", "Acidic", "Alkaline"],
+        answer: 2
+      }
+    ]
+  }
+];
+
+export function Academy() {
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const [quizMode, setQuizMode] = useState(false);
+  const [score, setScore] = useState(0);
+  const [completed, setCompleted] = useState<string[]>([]);
+
+  const handleComplete = (lessonId: string) => {
+    if (!completed.includes(lessonId)) {
+      setCompleted([...completed, lessonId]);
+    }
+    setSelectedLesson(null);
+    setQuizMode(false);
+    setScore(0);
+  };
+
+  return (
+    <div className="min-h-full bg-white dark:bg-[#0B0E14] transition-colors duration-300">
+      {!selectedLesson ? (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="p-8 max-w-6xl mx-auto"
+        >
+          <header className="mb-12">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-blue-500/10 text-blue-500 rounded-2xl border border-blue-500/20">
+                <GraduationCap size={32} />
+              </div>
+              <div>
+                <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Chemistry Academy</h1>
+                <p className="text-slate-500 dark:text-slate-400 font-medium">Master the elements through structured scientific modules.</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+              <div className="bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 p-4 rounded-2xl">
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Enrolled Students</p>
+                <p className="text-xl font-black text-slate-900 dark:text-white">Explorer Account</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 p-4 rounded-2xl">
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Modules Completed</p>
+                <p className="text-xl font-black text-slate-900 dark:text-white">{completed.length} / {LESSONS.length}</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 p-4 rounded-2xl">
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Academy Level</p>
+                <p className="text-xl font-black text-blue-600 dark:text-blue-500">{completed.length === LESSONS.length ? 'Scientist' : 'Novice'}</p>
+              </div>
+            </div>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {LESSONS.map((lesson, idx) => (
+              <motion.div
+                key={lesson.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                onClick={() => setSelectedLesson(lesson)}
+                className="group relative bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-8 cursor-pointer hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 p-8 text-blue-500/5 group-hover:text-blue-500/10 transition-colors">
+                  {lesson.icon}
+                </div>
+                
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-slate-50 dark:bg-[#0B0E14] border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                    {lesson.icon}
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{lesson.category}</span>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight">{lesson.title}</h3>
+                  </div>
+                </div>
+
+                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">{lesson.description}</p>
+
+                <div className="flex items-center justify-between mt-auto pt-6 border-t border-slate-100 dark:border-slate-800/50">
+                  <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-xs font-bold">
+                    <Zap size={14} className="text-amber-500" />
+                    {lesson.duration}
+                  </div>
+                  {completed.includes(lesson.id) ? (
+                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-500 text-xs font-black">
+                      <CheckCircle2 size={16} />
+                      COMPLETED
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-blue-600 dark:text-blue-500 text-xs font-black">
+                      START MODULE
+                      <ChevronRight size={16} />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="p-8 max-w-4xl mx-auto"
+        >
+          <button 
+            type="button"
+            onClick={() => setSelectedLesson(null)}
+            className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors mb-8 group"
+          >
+            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-bold">Back to Academy</span>
+          </button>
+
+          {!quizMode ? (
+            <div className="space-y-12 pb-24">
+              <header>
+                <span className="text-[10px] font-black text-blue-600 dark:text-blue-500 uppercase tracking-[0.2em] mb-4 block">{selectedLesson.category} Module</span>
+                <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-4">{selectedLesson.title}</h1>
+                <p className="text-slate-500 dark:text-slate-400 text-lg">{selectedLesson.description}</p>
+              </header>
+
+              <div className="grid gap-12">
+                {selectedLesson.content.map((section, idx) => (
+                  <section key={idx} className="space-y-6">
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                      <div className="w-1.5 h-8 bg-blue-600 rounded-full" />
+                      {section.heading}
+                    </h2>
+                    <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">{section.text}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {section.highlights.map((h, i) => (
+                        <div key={i} className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-[#161B22] rounded-2xl border border-slate-200 dark:border-slate-800">
+                          <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{h}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+
+              <div className="p-8 bg-blue-600 rounded-[2rem] shadow-2xl shadow-blue-600/20 text-center space-y-6">
+                <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center mx-auto text-white">
+                  <Sparkles size={32} />
+                </div>
+                <h3 className="text-2xl font-black text-white">Module Checkpoint</h3>
+                <p className="text-blue-100 max-w-md mx-auto">Ready to verify your understanding of {selectedLesson.title.toLowerCase()}?</p>
+                <button 
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setQuizMode(true);
+                  }}
+                  className="px-10 py-4 bg-white text-blue-600 rounded-2xl font-black text-lg hover:bg-blue-50 transition-all shadow-xl relative z-10"
+                >
+                  Take Checkpoint Test
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-2xl mx-auto py-12">
+              <div className="bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 rounded-[3rem] p-12 text-center shadow-2xl">
+                <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-8 border border-amber-500/20">
+                  <Trophy size={40} />
+                </div>
+                <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-8">Checkpoint: {selectedLesson.title}</h2>
+                
+                <div className="space-y-8 text-left">
+                  {selectedLesson.questions.map((q, qIdx) => (
+                    <div key={qIdx} className="space-y-6">
+                      <p className="text-xl font-bold text-slate-900 dark:text-white">{q.question}</p>
+                      <div className="grid gap-3">
+                        {q.options.map((opt, oIdx) => (
+                          <button
+                            key={oIdx}
+                            type="button"
+                            onClick={() => setScore(oIdx === q.answer ? 100 : 0)}
+                            className={`p-4 rounded-2xl border transition-all text-left font-bold ${
+                              score === 100 && oIdx === q.answer 
+                                ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-500' 
+                                : 'bg-slate-50 dark:bg-[#0B0E14] border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600'
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  type="button"
+                  onClick={() => handleComplete(selectedLesson.id)}
+                  className="w-full mt-12 py-5 bg-blue-600 text-white rounded-2xl font-black text-xl hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20"
+                >
+                  Finish Module
+                </button>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      )}
+    </div>
+  );
+}

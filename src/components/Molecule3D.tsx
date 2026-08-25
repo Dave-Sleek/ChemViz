@@ -72,7 +72,7 @@ export const Molecule3D = forwardRef<Molecule3DHandle, Molecule3DProps>(({
           <pointLight position={[10, 10, 10]} intensity={1.5} castShadow />
           <pointLight position={[-10, -10, -10]} intensity={0.5} />
           
-          <Stage adjustCamera intensity={0.5} environment="city" preset="rembrandt">
+          <Stage adjustCamera intensity={0.5} environment={{ files: 'potsdamer_platz_1k.hdr', path: 'https://cdn.jsdelivr.net/gh/pmndrs/drei-assets@master/hdri/' }} preset="rembrandt">
             <Center top>
               <MoleculeContent 
                 structure={structure} 

@@ -20,8 +20,8 @@ export function SearchBar({ onSearch, placeholder = "Search formula...", classNa
   const containerRef = useRef<HTMLDivElement>(null);
 
   const inputClasses = size === 'lg' 
-    ? "w-full text-lg md:text-xl bg-[#161B22] border-2 border-slate-700 rounded-2xl py-6 pl-14 pr-16 shadow-2xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none text-white placeholder:text-slate-600"
-    : "w-full bg-[#0B0E14] border border-slate-600 rounded-full py-2 px-4 pl-10 text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-slate-200 placeholder:text-slate-500";
+    ? "w-full text-lg md:text-xl bg-slate-50 dark:bg-[#161B22] border-2 border-slate-200 dark:border-slate-700 rounded-2xl py-6 pl-14 pr-16 shadow-2xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600"
+    : "w-full bg-slate-50 dark:bg-[#0B0E14] border border-slate-200 dark:border-slate-600 rounded-full py-2 px-4 pl-10 text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-slate-900 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500";
 
   const searchIconSize = size === 'lg' ? 24 : 16;
   const searchIconLeft = size === 'lg' ? "left-5" : "left-3.5";
@@ -112,10 +112,10 @@ export function SearchBar({ onSearch, placeholder = "Search formula...", classNa
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className={`absolute top-full left-0 right-0 mt-2 bg-[#161B22] border border-slate-700 rounded-3xl shadow-2xl overflow-hidden z-[100]`}
+            className={`absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl overflow-hidden z-[100]`}
           >
             <div className="p-3">
-              <div className="px-4 py-2 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800/50 mb-2">
+              <div className="px-4 py-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800/50 mb-2">
                 Compound Matches
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -125,11 +125,11 @@ export function SearchBar({ onSearch, placeholder = "Search formula...", classNa
                     onClick={() => handleSelect(molecule)}
                     onMouseEnter={() => setSelectedIndex(index)}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all text-left group/item ${
-                      index === selectedIndex ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 text-slate-300'
+                      index === selectedIndex ? 'bg-blue-600 text-white' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'
                     }`}
                   >
                     <div className="flex flex-col">
-                      <span className={`text-sm font-bold ${index === selectedIndex ? 'text-white' : 'text-slate-200'}`}>
+                      <span className={`text-sm font-bold ${index === selectedIndex ? 'text-white' : 'text-slate-900 dark:text-slate-200'}`}>
                         {formatFormula(molecule.formula)}
                       </span>
                       <span className={`text-[11px] ${index === selectedIndex ? 'text-blue-100' : 'text-slate-500'}`}>
@@ -139,7 +139,7 @@ export function SearchBar({ onSearch, placeholder = "Search formula...", classNa
                     <span className={`text-[9px] font-black px-2 py-1 rounded-lg border ${
                       index === selectedIndex 
                         ? 'bg-blue-500/30 border-blue-400 text-white' 
-                        : 'bg-slate-900 border-slate-800 text-slate-500'
+                        : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500'
                     }`}>
                       {molecule.category}
                     </span>

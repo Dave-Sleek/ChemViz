@@ -20,6 +20,30 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+  
+  // PubChem Proxy to bypass CORS
+  app.get("/api/proxy/pubchem/*", async (req, res) => {
+    const pubchemPath = req.params[0];
+    const query = req.url.split('?')[1];
+    const pubchemUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/${pubchemPath}${query ? '?' + query : ''}`;
+
+    try {
+      const response = await fetch(pubchemUrl, {
+        headers: {
+          'User-Agent': 'Molecufy-App/1.0',
+          'Accept': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        return res.status(response.status).json({ error: "PubChem API responded with an error." });
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (error: any) {
+      console.error("PubChem Proxy Error:", error);
+      res.status(500).json({ error: "Failed to fetch from PubChem: " + error.message });
+    }
+  });
 
   // API Routes
   app.post("/api/reactions/simulate", async (req, res) => {

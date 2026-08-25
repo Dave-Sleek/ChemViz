@@ -15,7 +15,7 @@ const EXAMPLES = ['H2O', 'CO2', 'CH4', 'NH3', 'NaCl', 'C6H12O6', 'H2SO4', 'CaCO3
 
 export function Home({ onSearch, loading, error }: HomeProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-full text-center max-w-4xl mx-auto py-20 px-6 bg-[#0B0E14]">
+    <div className="flex flex-col items-center justify-center min-h-full text-center max-w-4xl mx-auto py-20 px-6">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -28,7 +28,7 @@ export function Home({ onSearch, loading, error }: HomeProps) {
       <motion.h1 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-5xl md:text-8xl font-black tracking-tight mb-8 text-white leading-tight"
+        className="text-5xl md:text-8xl font-black tracking-tight mb-8 text-slate-900 dark:text-white leading-tight"
       >
         See Chemistry <span className="text-blue-500">Come to Life</span>
       </motion.h1>
@@ -70,7 +70,7 @@ export function Home({ onSearch, loading, error }: HomeProps) {
             <button
               key={ex}
               onClick={() => onSearch(ex)}
-              className="whitespace-nowrap px-6 py-3 bg-[#0D1117] border border-slate-800 rounded-xl text-sm font-bold text-slate-400 hover:border-blue-500 hover:text-white transition-all shadow-sm shrink-0"
+              className="whitespace-nowrap px-6 py-3 bg-slate-50 dark:bg-[#0D1117] border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-white transition-all shadow-sm shrink-0"
             >
               {formatFormula(ex)}
             </button>

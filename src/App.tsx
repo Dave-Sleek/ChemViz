@@ -8,6 +8,7 @@ import { Quiz } from './pages/Quiz';
 import { Favorites } from './pages/Favorites';
 import { Help } from './pages/Help';
 import { About } from './pages/About';
+import { Academy } from './pages/Academy';
 import { fetchMoleculeByFormula } from './services/pubchem';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -55,7 +56,7 @@ export default function App() {
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#0B0E14] text-slate-200 overflow-hidden font-sans selection:bg-blue-500/30">
+    <div className="flex flex-col h-screen w-full bg-white dark:bg-[#0B0E14] text-slate-900 dark:text-slate-200 overflow-hidden font-sans selection:bg-blue-500/30 transition-colors duration-300">
       <Navbar view={view} setView={setView} toggleTheme={toggleTheme} theme={theme} onSearch={handleSearch} />
       
       <main className="flex-1 overflow-auto">
@@ -82,11 +83,12 @@ export default function App() {
             {view === 'favorites' && <Favorites onSelect={handleSearch} />}
             {view === 'help' && <Help />}
             {view === 'about' && <About />}
+            {view === 'academy' && <Academy />}
           </motion.div>
         </AnimatePresence>
       </main>
 
-      <footer className="h-8 bg-[#0D1117] border-t border-slate-800 px-6 flex items-center justify-between text-[10px] text-slate-500 shrink-0">
+      <footer className="h-8 bg-slate-50 dark:bg-[#0D1117] border-t border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between text-[10px] text-slate-500 shrink-0">
         <div className="flex gap-4">
           <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Ready</span>
           <span>Engine: v4.2.1-Scientific</span>

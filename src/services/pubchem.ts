@@ -2,7 +2,7 @@ import { type MoleculeData, type ConformerData } from '../types';
 import { parseFormula } from '../utils/formulaParser';
 import { elements } from '../data/elements';
 
-const PUBCHEM_BASE_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug';
+const PUBCHEM_BASE_URL = '/api/proxy/pubchem';
 
 const cache: Record<string, MoleculeData> = {};
 

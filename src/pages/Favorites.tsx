@@ -30,7 +30,7 @@ export function Favorites({ onSelect }: FavoritesProps) {
   };
 
   return (
-    <div className="h-full flex flex-col p-8 bg-[#0B0E14] overflow-y-auto scrollbar-hide">
+    <div className="h-full flex flex-col p-8 bg-white dark:bg-[#0B0E14] overflow-y-auto scrollbar-hide transition-colors duration-300">
       <section className="mb-16">
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3">
@@ -38,7 +38,7 @@ export function Favorites({ onSelect }: FavoritesProps) {
               <Heart size={24} className="fill-current" />
             </div>
             <div>
-              <h2 className="text-3xl font-black text-white tracking-tight">Saved Compounds</h2>
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Saved Compounds</h2>
               <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">{favorites.length} Entries Archived</p>
             </div>
           </div>
@@ -64,22 +64,22 @@ export function Favorites({ onSelect }: FavoritesProps) {
             })}
           </div>
         ) : (
-          <div className="py-20 text-center bg-[#161B22]/50 border-2 border-dashed border-slate-800 rounded-3xl">
-            <Heart size={48} className="text-slate-700 mx-auto mb-4" />
+          <div className="py-20 text-center bg-slate-50 dark:bg-[#161B22]/50 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
+            <Heart size={48} className="text-slate-300 dark:text-slate-700 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-slate-400 mb-1">No Saved Compounds</h3>
-            <p className="text-slate-600 text-sm">Molecules you save will appear in this collection.</p>
+            <p className="text-slate-500 dark:text-slate-600 text-sm">Molecules you save will appear in this collection.</p>
           </div>
         )}
       </section>
 
       <section className="pb-12">
-        <div className="flex items-center justify-between mb-8 pt-12 border-t border-slate-800">
+        <div className="flex items-center justify-between mb-8 pt-12 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-slate-800 text-slate-400 rounded-2xl border border-slate-700">
+            <div className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400 rounded-2xl border border-slate-200 dark:border-slate-700">
               <FlaskConical size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white tracking-tight">Recent Explorations</h2>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Recent Explorations</h2>
               <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">Terminal Session History</p>
             </div>
           </div>
@@ -98,14 +98,14 @@ export function Favorites({ onSelect }: FavoritesProps) {
             <button
               key={rec}
               onClick={() => onSelect(rec)}
-              className="px-6 py-4 bg-[#161B22] border border-slate-800 rounded-xl font-bold flex items-center gap-4 hover:border-blue-500 hover:text-white group transition-all shadow-sm"
+              className="px-6 py-4 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 rounded-xl font-bold flex items-center gap-4 hover:border-blue-500 hover:text-slate-900 dark:hover:text-white group transition-all shadow-sm"
             >
-              <span className="text-slate-500 group-hover:text-blue-500 transition-colors">{formatFormula(rec)}</span>
-              <ArrowRight size={16} className="text-slate-700 group-hover:text-slate-400 transition-colors" />
+              <span className="text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors">{formatFormula(rec)}</span>
+              <ArrowRight size={16} className="text-slate-300 dark:text-slate-700 group-hover:text-slate-400 transition-colors" />
             </button>
           ))}
           {recent.length === 0 && (
-            <p className="text-slate-600 text-sm font-medium italic">Terminal history is currently empty.</p>
+            <p className="text-slate-400 dark:text-slate-600 text-sm font-medium italic">Terminal history is currently empty.</p>
           )}
         </div>
       </section>
@@ -115,17 +115,17 @@ export function Favorites({ onSelect }: FavoritesProps) {
 
 function MoleculeCard({ formula, name, cid, onSelect, onRemove }: { formula: string, name: string, cid: number | null, onSelect: () => void, onRemove: () => void }) {
   return (
-    <div className="group bg-[#161B22] border border-slate-800 rounded-3xl p-5 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all flex flex-col h-full">
+    <div className="group bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all flex flex-col h-full">
       <div className="flex justify-between items-start mb-4">
         <div className="flex flex-col">
-          <h3 className="text-xl font-black text-white group-hover:text-blue-400 transition-colors leading-tight truncate max-w-[150px]">
+          <h3 className="text-xl font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight truncate max-w-[150px]">
             {name}
           </h3>
-          <p className="text-blue-500 font-mono text-sm font-bold">{formatFormula(formula)}</p>
+          <p className="text-blue-600 dark:text-blue-400 font-mono text-sm font-bold">{formatFormula(formula)}</p>
         </div>
         <button 
           onClick={onRemove}
-          className="p-2 text-slate-700 hover:text-red-500 transition-colors bg-[#0B0E14] rounded-xl border border-slate-800"
+          className="p-2 text-slate-400 dark:text-slate-700 hover:text-red-500 transition-colors bg-white dark:bg-[#0B0E14] rounded-xl border border-slate-200 dark:border-slate-800"
         >
           <Trash2 size={16} />
         </button>
@@ -140,14 +140,14 @@ function MoleculeCard({ formula, name, cid, onSelect, onRemove }: { formula: str
             referrerPolicy="no-referrer"
           />
         ) : (
-          <FlaskConical size={32} className="text-slate-200" />
+          <FlaskConical size={32} className="text-slate-100 dark:text-slate-200" />
         )}
         <div className="absolute inset-0 bg-blue-600/0 group-hover/thumb:bg-blue-600/5 transition-colors" />
       </div>
 
       <button 
         onClick={onSelect}
-        className="w-full py-3.5 bg-[#0B0E14] text-slate-400 rounded-2xl font-bold hover:bg-blue-600 hover:text-white transition-all border border-slate-800 hover:border-blue-600 shadow-sm flex items-center justify-center gap-2"
+        className="w-full py-3.5 bg-white dark:bg-[#0B0E14] text-slate-500 dark:text-slate-400 rounded-2xl font-bold hover:bg-blue-600 hover:text-white transition-all border border-slate-200 dark:border-slate-800 hover:border-blue-600 shadow-sm flex items-center justify-center gap-2"
       >
         <span>Analyze Structure</span>
         <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
