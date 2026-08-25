@@ -25,15 +25,15 @@ export function PeriodicTable() {
   };
 
   return (
-    <div className="h-full flex flex-col p-8 bg-[#0B0E14] overflow-hidden">
+    <div className="h-full flex flex-col p-8 bg-slate-50 dark:bg-[#0B0E14] transition-colors duration-300 overflow-hidden">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
         <div>
-          <h2 className="text-3xl font-black text-white tracking-tight mb-2">The Periodic Table</h2>
-          <p className="text-slate-500 font-medium">Interactive exploration of the chemical elements.</p>
+          <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-2">The Periodic Table</h2>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Interactive exploration of the chemical elements.</p>
         </div>
 
         <div className="relative group max-w-md w-full">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition-colors">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors">
             <Search size={18} />
           </div>
           <input 
@@ -41,12 +41,12 @@ export function PeriodicTable() {
             placeholder="Search elements (e.g. Gold, Au, Noble Gas)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#161B22] border border-slate-800 rounded-2xl py-3.5 pl-12 pr-4 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-medium"
+            className="w-full bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 rounded-2xl py-3.5 pl-12 pr-4 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-medium"
           />
           {searchQuery && (
             <button 
               onClick={() => setSearchQuery('')}
-              className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-white"
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white"
             >
               <X size={16} />
             </button>
@@ -74,7 +74,7 @@ export function PeriodicTable() {
                 }}
                 whileHover={isVisible ? { scale: 1.05, zIndex: 10 } : {}}
                 onClick={() => isVisible && setSelectedElement(el)}
-                className={`aspect-square p-1.5 rounded-lg border border-slate-800 cursor-pointer transition-all ${
+                className={`aspect-square p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer transition-all ${
                   isVisible ? 'hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10' : 'cursor-default'
                 } flex flex-col items-center justify-center relative overflow-hidden group`}
                 style={{ 
@@ -86,9 +86,9 @@ export function PeriodicTable() {
                   className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity"
                   style={{ backgroundColor: getElementColor(el.symbol) }}
                 />
-                <span className="text-[8px] font-bold text-slate-500 self-start leading-none">{el.number}</span>
-                <span className="text-sm font-black text-white leading-none my-0.5">{el.symbol}</span>
-                <span className="text-[7px] text-slate-400 truncate w-full text-center">{el.name}</span>
+                <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 self-start leading-none">{el.number}</span>
+                <span className="text-sm font-black text-slate-900 dark:text-white leading-none my-0.5">{el.symbol}</span>
+                <span className="text-[7px] text-slate-500 dark:text-slate-400 truncate w-full text-center">{el.name}</span>
               </motion.div>
             );
           })}
@@ -101,11 +101,11 @@ export function PeriodicTable() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="fixed top-16 right-0 bottom-8 w-80 bg-[#161B22] border-l border-slate-700 shadow-2xl p-6 overflow-y-auto scrollbar-hide z-40"
+            className="fixed top-16 right-0 bottom-8 w-80 bg-white dark:bg-[#161B22] border-l border-slate-200 dark:border-slate-700 shadow-2xl p-6 overflow-y-auto scrollbar-hide z-40"
           >
             <button 
               onClick={() => setSelectedElement(null)}
-              className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               <X size={20} />
             </button>
@@ -117,8 +117,8 @@ export function PeriodicTable() {
               {selectedElement.symbol}
             </div>
 
-            <h3 className="text-2xl font-bold text-white mb-1">{selectedElement.name}</h3>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">{selectedElement.category}</p>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{selectedElement.name}</h3>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">{selectedElement.category}</p>
 
             <div className="space-y-4 mb-8">
               <DetailRow label="Atomic Number" value={selectedElement.number} />
@@ -128,7 +128,7 @@ export function PeriodicTable() {
               <DetailRow label="Boiling Point" value={selectedElement.boiling_point ? `${selectedElement.boiling_point} K` : 'N/A'} />
             </div>
 
-            <p className="text-sm text-slate-400 leading-relaxed italic mb-8">
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed italic mb-8">
               {selectedElement.summary}
             </p>
           </motion.div>
@@ -140,9 +140,9 @@ export function PeriodicTable() {
 
 function DetailRow({ label, value }: { label: string, value: any }) {
   return (
-    <div className="flex justify-between items-center py-2 border-b border-slate-800">
-      <span className="text-[10px] font-bold text-slate-500 uppercase">{label}</span>
-      <span className="text-xs font-mono text-slate-200">{value}</span>
+    <div className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800">
+      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">{label}</span>
+      <span className="text-xs font-mono text-slate-700 dark:text-slate-200">{value}</span>
     </div>
   );
 }

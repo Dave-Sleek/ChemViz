@@ -56,7 +56,7 @@ export default function App() {
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   return (
-    <div className="flex flex-col h-screen w-full bg-white dark:bg-[#0B0E14] text-slate-900 dark:text-slate-200 overflow-hidden font-sans selection:bg-blue-500/30 transition-colors duration-300">
+    <div className={`flex flex-col h-screen w-full bg-white dark:bg-[#0B0E14] text-slate-900 dark:text-slate-200 overflow-hidden font-sans selection:bg-blue-500/30 transition-colors duration-300 ${theme === 'dark' ? 'dark' : ''}`} style={{ colorScheme: theme }}>
       <Navbar view={view} setView={setView} toggleTheme={toggleTheme} theme={theme} onSearch={handleSearch} />
       
       <main className="flex-1 overflow-auto">

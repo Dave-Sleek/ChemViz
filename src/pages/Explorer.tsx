@@ -45,6 +45,8 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
   const [autoRotate, setAutoRotate] = useState(true);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [showControls, setShowControls] = useState(true);
+  const [showLegend, setShowLegend] = useState(true);
   const [showComparison, setShowComparison] = useState(false);
   const [showReactionSim, setShowReactionSim] = useState(false);
   const [moleculeHistory, setMoleculeHistory] = useState<MoleculeData[]>([]);
@@ -411,63 +413,101 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
         {/* 3D Visualization Control Panel */}
         {activeTab === '3d' && (
           <>
-            <div className="absolute top-24 left-6 flex flex-col gap-2 z-30">
-              <motion.div 
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                className="bg-white/90 dark:bg-[#161B22]/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200 dark:border-white/5 shadow-2xl flex flex-col gap-3"
+            {/* Panel Toggles */}
+            <div className="absolute top-24 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30">
+              <button 
+                onClick={() => setShowControls(!showControls)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border ${
+                  showControls 
+                    ? 'bg-blue-600/10 text-blue-600 border-blue-500/20' 
+                    : 'bg-white/80 dark:bg-[#161B22]/80 text-slate-500 border-slate-200 dark:border-white/5'
+                }`}
               >
-                <div className="pb-2 border-b border-slate-100 dark:border-white/5">
-                  <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">3D Controls</span>
-                </div>
-                
-                <ToggleButton 
-                  active={showBondLengths} 
-                  onClick={() => setShowBondLengths(!showBondLengths)}
-                  label="Bond Lengths"
-                />
-                <ToggleButton 
-                  active={showBondAngles} 
-                  onClick={() => setShowBondAngles(!showBondAngles)}
-                  label="Bond Angles"
-                />
-                <ToggleButton 
-                  active={autoRotate} 
-                  onClick={() => setAutoRotate(!autoRotate)}
-                  label="Auto Rotation"
-                />
-                
-                <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex flex-col gap-2">
-                  <button 
-                    onClick={() => setProjection(p => p === 'perspective' ? 'orthographic' : 'perspective')}
-                    className="flex items-center justify-between gap-4 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-[10px] font-bold text-slate-600 dark:text-slate-300"
-                  >
-                    Projection: {projection === 'perspective' ? 'Persp' : 'Ortho'}
-                    <Maximize2 size={12} />
-                  </button>
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    <button 
-                      onClick={handleResetCamera}
-                      className="p-2 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center justify-center gap-1"
-                      title="Reset Camera"
-                    >
-                      <RotateCcw size={14} />
-                    </button>
-                    <button 
-                      onClick={handleSnapshot}
-                      className="p-2 bg-blue-600/10 dark:bg-blue-600/20 hover:bg-blue-600/20 dark:hover:bg-blue-600/30 rounded-lg text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center justify-center gap-1"
-                      title="Take Snapshot"
-                    >
-                      <Camera size={14} />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
+                <Settings size={12} />
+                Controls
+              </button>
+              <button 
+                onClick={() => setShowLegend(!showLegend)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border ${
+                  showLegend 
+                    ? 'bg-emerald-600/10 text-emerald-600 border-emerald-500/20' 
+                    : 'bg-white/80 dark:bg-[#161B22]/80 text-slate-500 border-slate-200 dark:border-white/5'
+                }`}
+              >
+                <Info size={12} />
+                Legend
+              </button>
             </div>
 
+            <AnimatePresence>
+              {showControls && (
+                <motion.div 
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -20, opacity: 0 }}
+                  className="absolute top-24 left-6 flex flex-col gap-2 z-30"
+                >
+                  <div className="bg-white/90 dark:bg-[#161B22]/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200 dark:border-white/5 shadow-2xl flex flex-col gap-3">
+                    <div className="pb-2 border-b border-slate-100 dark:border-white/5 flex items-center justify-between gap-4">
+                      <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">3D Controls</span>
+                      <button onClick={() => setShowControls(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                        <X size={12} />
+                      </button>
+                    </div>
+                    
+                    <ToggleButton 
+                      active={showBondLengths} 
+                      onClick={() => setShowBondLengths(!showBondLengths)}
+                      label="Bond Lengths"
+                    />
+                    <ToggleButton 
+                      active={showBondAngles} 
+                      onClick={() => setShowBondAngles(!showBondAngles)}
+                      label="Bond Angles"
+                    />
+                    <ToggleButton 
+                      active={autoRotate} 
+                      onClick={() => setAutoRotate(!autoRotate)}
+                      label="Auto Rotation"
+                    />
+                    
+                    <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex flex-col gap-2">
+                      <button 
+                        onClick={() => setProjection(p => p === 'perspective' ? 'orthographic' : 'perspective')}
+                        className="flex items-center justify-between gap-4 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-[10px] font-bold text-slate-600 dark:text-slate-300"
+                      >
+                        Projection: {projection === 'perspective' ? 'Persp' : 'Ortho'}
+                        <Maximize2 size={12} />
+                      </button>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <button 
+                          onClick={handleResetCamera}
+                          className="p-2 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center justify-center gap-1"
+                          title="Reset Camera"
+                        >
+                          <RotateCcw size={14} />
+                        </button>
+                        <button 
+                          onClick={handleSnapshot}
+                          className="p-2 bg-blue-600/10 dark:bg-blue-600/20 hover:bg-blue-600/20 dark:hover:bg-blue-600/30 rounded-lg text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center justify-center gap-1"
+                          title="Take Snapshot"
+                        >
+                          <Camera size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Interactive Visual Legend */}
-            <VisualLegend molecule={molecule} />
+            <AnimatePresence>
+              {showLegend && (
+                <VisualLegend molecule={molecule} onClose={() => setShowLegend(false)} />
+              )}
+            </AnimatePresence>
           </>
         )}
 
@@ -664,18 +704,24 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
 
 import { getElementColor } from '../utils/chemistry';
 
-function VisualLegend({ molecule }: { molecule: MoleculeData }) {
+function VisualLegend({ molecule, onClose }: { molecule: MoleculeData, onClose: () => void }) {
   // Extract unique elements from the molecule
   const uniqueElements = Array.from(new Set(molecule.elements.map(e => e.symbol)));
 
   return (
     <motion.div 
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
+      initial={{ x: 20, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: 20, opacity: 0 }}
       className="absolute top-24 right-6 z-30 flex flex-col gap-2"
     >
       <div className="bg-white/90 dark:bg-[#161B22]/90 backdrop-blur-md p-4 rounded-2xl border border-slate-200 dark:border-white/5 shadow-2xl min-w-[120px]">
-        <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 pb-2 border-b border-slate-100 dark:border-white/5">Element Legend</h4>
+        <div className="flex items-center justify-between gap-4 mb-4 pb-2 border-b border-slate-100 dark:border-white/5">
+          <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Element Legend</h4>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+            <X size={12} />
+          </button>
+        </div>
         <div className="space-y-3">
           {uniqueElements.map(symbol => {
             const color = getElementColor(symbol);

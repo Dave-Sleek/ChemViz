@@ -172,7 +172,7 @@ export function Quiz() {
   const progress = ((currentIndex + (isAnswered ? 1 : 0)) / QUESTIONS.length) * 100;
 
   return (
-    <div className="min-h-full flex items-center justify-center p-6 bg-[#0B0E14] overflow-x-auto overflow-y-auto">
+    <div className="min-h-full flex items-center justify-center p-6 bg-slate-50 dark:bg-[#0B0E14] transition-colors duration-300 overflow-x-auto overflow-y-auto">
       <AnimatePresence mode="wait">
         {currentStep === 'start' && (
           <motion.div
@@ -180,13 +180,13 @@ export function Quiz() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="text-center bg-[#161B22] border border-slate-700 p-12 rounded-3xl shadow-2xl shadow-blue-500/5 max-w-md w-full"
+            className="text-center bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-700 p-12 rounded-3xl shadow-2xl shadow-blue-500/5 max-w-md w-full"
           >
             <div className="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-blue-500/20">
               <BrainCircuit size={40} className="text-blue-500" />
             </div>
-            <h1 className="text-4xl font-black text-white mb-4 tracking-tight">Chemistry Quiz</h1>
-            <p className="text-slate-400 mb-10 text-lg font-light leading-relaxed">
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">Chemistry Quiz</h1>
+            <p className="text-slate-500 dark:text-slate-400 mb-10 text-lg font-light leading-relaxed">
               Test your knowledge of formulas, elements, and molecular properties.
             </p>
             <button
@@ -207,7 +207,7 @@ export function Quiz() {
             className="w-full max-w-2xl"
           >
             {/* Progress Bar */}
-            <div className="w-full h-1.5 bg-slate-800 rounded-full mb-8 overflow-hidden">
+            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mb-8 overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
@@ -217,26 +217,26 @@ export function Quiz() {
 
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-xl font-bold text-white tracking-tight">Question {currentIndex + 1}</h2>
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Chemistry Fundamentals</div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Question {currentIndex + 1}</h2>
+                <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Chemistry Fundamentals</div>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-black text-blue-500">{currentIndex + 1}<span className="text-slate-700 font-light mx-1">/</span>{QUESTIONS.length}</div>
+                <div className="text-2xl font-black text-blue-500">{currentIndex + 1}<span className="text-slate-300 dark:text-slate-700 font-light mx-1">/</span>{QUESTIONS.length}</div>
               </div>
             </div>
 
-            <div className="bg-[#161B22] border border-slate-700 p-10 rounded-3xl shadow-xl mb-8">
-              <h2 className="text-2xl font-bold text-white mb-10 leading-tight">{QUESTIONS[currentIndex].text}</h2>
+            <div className="bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-700 p-10 rounded-3xl shadow-xl mb-8">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-10 leading-tight">{QUESTIONS[currentIndex].text}</h2>
               <div className="flex sm:grid sm:grid-cols-1 gap-4 overflow-x-auto pb-4 no-scrollbar">
                 {QUESTIONS[currentIndex].options.map((opt, idx) => {
-                  let statusClass = "border-slate-800 bg-[#0D1117] text-slate-300 hover:border-slate-600 hover:bg-[#1C2128]";
+                  let statusClass = "border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#0D1117] text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100 dark:hover:bg-[#1C2128]";
                   if (isAnswered) {
                     if (idx === QUESTIONS[currentIndex].correct) {
-                      statusClass = "border-emerald-500 bg-emerald-500/10 text-emerald-400";
+                      statusClass = "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400";
                     } else if (idx === selectedOption) {
-                      statusClass = "border-red-500 bg-red-500/10 text-red-400";
+                      statusClass = "border-red-500 bg-red-500/10 text-red-600 dark:text-red-400";
                     } else {
-                      statusClass = "opacity-30 border-slate-800 bg-[#0D1117]";
+                      statusClass = "opacity-30 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#0D1117]";
                     }
                   }
 
@@ -264,8 +264,8 @@ export function Quiz() {
                   className="space-y-6"
                 >
                   <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
-                    <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Concept Explanation</h3>
-                    <p className="text-sm text-slate-400 leading-relaxed italic">{QUESTIONS[currentIndex].explanation}</p>
+                    <h3 className="text-xs font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest mb-1">Concept Explanation</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed italic">{QUESTIONS[currentIndex].explanation}</p>
                   </div>
                   <button
                     onClick={nextQuestion}
@@ -287,22 +287,22 @@ export function Quiz() {
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-2xl space-y-6"
           >
-            <div className="text-center bg-[#161B22] border border-slate-700 p-10 rounded-3xl shadow-2xl">
+            <div className="text-center bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-700 p-10 rounded-3xl shadow-2xl">
               <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-8 text-amber-500 border border-amber-500/20 shadow-xl shadow-amber-500/5">
                 <Trophy size={40} />
               </div>
-              <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Quiz Results</h1>
-              <p className="text-slate-500 mb-10">Assessment performance analytics finalized.</p>
+              <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Quiz Results</h1>
+              <p className="text-slate-500 dark:text-slate-400 mb-10">Assessment performance analytics finalized.</p>
               
               <div className="text-6xl font-black mb-12 flex flex-col items-center">
-                <span className="text-blue-500">{score} <span className="text-slate-700">/</span> {QUESTIONS.length}</span>
-                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mt-3">Final Score</span>
+                <span className="text-blue-500">{score} <span className="text-slate-200 dark:text-slate-700">/</span> {QUESTIONS.length}</span>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] mt-3">Final Score</span>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-10">
                 <button
                   onClick={startQuiz}
-                  className="py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-all border border-slate-700 flex items-center justify-center gap-2"
+                  className="py-4 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2"
                 >
                   <RefreshCw size={18} />
                   Retry
@@ -318,21 +318,21 @@ export function Quiz() {
             </div>
 
             {/* Leaderboard */}
-            <div className="bg-[#161B22] border border-slate-800 p-8 rounded-3xl">
+            <div className="bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 p-8 rounded-3xl shadow-lg">
               <div className="flex items-center gap-3 mb-6">
                 <Medal size={20} className="text-amber-500" />
-                <h3 className="text-sm font-bold text-white uppercase tracking-widest">Recent Assessments</h3>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Recent Assessments</h3>
               </div>
               <div className="space-y-3">
                 {leaderboard.length > 0 ? leaderboard.map((entry, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-[#0B0E14] rounded-2xl border border-slate-800/50">
+                  <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-[#0B0E14] rounded-2xl border border-slate-100 dark:border-slate-800/50">
                     <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+                      <div className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400">
                         #{idx + 1}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-200">{entry.score} / {entry.total}</p>
-                        <p className="text-[10px] text-slate-600 font-medium">{entry.date}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-slate-200">{entry.score} / {entry.total}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-600 font-medium">{entry.date}</p>
                       </div>
                     </div>
                     {entry.streak > 0 && (
@@ -343,7 +343,7 @@ export function Quiz() {
                     )}
                   </div>
                 )) : (
-                  <p className="text-center py-6 text-slate-600 text-sm italic font-medium">No previous data logs found.</p>
+                  <p className="text-center py-6 text-slate-400 dark:text-slate-600 text-sm italic font-medium">No previous data logs found.</p>
                 )}
               </div>
             </div>
