@@ -9,6 +9,7 @@ import { Favorites } from './pages/Favorites';
 import { Help } from './pages/Help';
 import { About } from './pages/About';
 import { Academy } from './pages/Academy';
+import MoleculeLibrary from './pages/MoleculeLibrary';
 import { fetchMoleculeByFormula } from './services/pubchem';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -84,6 +85,7 @@ export default function App() {
             {view === 'help' && <Help />}
             {view === 'about' && <About />}
             {view === 'academy' && <Academy />}
+            {view === 'library' && <MoleculeLibrary onSelect={handleSearch} />}
           </motion.div>
         </AnimatePresence>
       </main>

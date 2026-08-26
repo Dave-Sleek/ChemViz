@@ -218,7 +218,7 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
                   <X size={18} />
                 </button>
               </div>
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight mb-1">{molecule.name}</h2>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight mb-1">{molecule.name || 'Molecular Structure'}</h2>
               <p className="text-blue-600 dark:text-blue-400 font-mono font-bold text-lg mb-4">{formatFormula(molecule.formula)}</p>
               
               <div className="grid grid-cols-2 gap-2">
@@ -656,16 +656,16 @@ export function Explorer({ molecule, loading, error, onSearch }: ExplorerProps) 
               <section className="space-y-4">
                 <div className="p-4 bg-slate-50 dark:bg-[#0B0E14] rounded-2xl border border-slate-200 dark:border-slate-800">
                   <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">IUPAC Designation</p>
-                  <p className="text-sm font-bold text-slate-700 dark:text-slate-200 leading-relaxed">{molecule.name}</p>
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-200 leading-relaxed">{molecule.name || 'Unknown IUPAC Name'}</p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
-                  <MetricCard label="Molecular Weight" value={`${molecule.molecularWeight} g/mol`} />
-                  <MetricCard label="Exact Mass" value={`${molecule.properties.ExactMass || molecule.molecularWeight} g/mol`} />
-                  <MetricCard label="H-Bond Donors" value={molecule.properties.HBondDonorCount || 0} />
-                  <MetricCard label="H-Bond Acceptors" value={molecule.properties.HBondAcceptorCount || 0} />
-                  <MetricCard label="Rotatable Bonds" value={molecule.properties.RotatableBondCount || 0} />
-                  <MetricCard label="Complexity" value={molecule.properties.Complexity || 'N/A'} />
+                  <MetricCard label="Molecular Weight" value={`${Number(molecule.molecularWeight).toFixed(4)} g/mol`} />
+                  <MetricCard label="Exact Mass" value={`${Number(molecule.properties.ExactMass || molecule.molecularWeight).toFixed(4)} g/mol`} />
+                  <MetricCard label="H-Bond Donors" value={molecule.properties.HBondDonorCount ?? 0} />
+                  <MetricCard label="H-Bond Acceptors" value={molecule.properties.HBondAcceptorCount ?? 0} />
+                  <MetricCard label="Rotatable Bonds" value={molecule.properties.RotatableBondCount ?? 0} />
+                  <MetricCard label="Complexity" value={molecule.properties.Complexity ?? 'N/A'} />
                 </div>
               </section>
 

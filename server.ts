@@ -34,11 +34,22 @@ async function startServer() {
           'Accept': 'application/json'
         }
       });
+      
+      const contentType = response.headers.get("content-type");
       if (!response.ok) {
-        return res.status(response.status).json({ error: "PubChem API responded with an error." });
+        const errorText = await response.text();
+        console.error(`PubChem API Error (${response.status}):`, errorText);
+        return res.status(response.status).json({ error: `PubChem API responded with status ${response.status}` });
       }
-      const data = await response.json();
-      res.json(data);
+
+      if (contentType && contentType.includes("application/json")) {
+        const data = await response.json();
+        res.json(data);
+      } else {
+        const text = await response.text();
+        console.warn("PubChem proxy received non-JSON response:", text.substring(0, 200));
+        res.status(502).json({ error: "PubChem API returned an unexpected non-JSON response." });
+      }
     } catch (error: any) {
       console.error("PubChem Proxy Error:", error);
       res.status(500).json({ error: "Failed to fetch from PubChem: " + error.message });

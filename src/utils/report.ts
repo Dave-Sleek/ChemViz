@@ -37,7 +37,7 @@ export const generateMoleculeReport = (molecule: MoleculeData) => {
   const metrics = [
     ['Property', 'Value'],
     ['Molecular Weight', `${molecule.molecularWeight.toFixed(4)} g/mol`],
-    ['Exact Mass', `${molecule.properties.ExactMass?.toFixed(4) || 'N/A'}`],
+    ['Exact Mass', `${molecule.properties.ExactMass ? Number(molecule.properties.ExactMass).toFixed(4) : 'N/A'}`],
     ['Charge', `${molecule.properties.Charge ?? 0}`],
     ['H-Bond Donors', `${molecule.properties.HBondDonorCount || 0}`],
     ['H-Bond Acceptors', `${molecule.properties.HBondAcceptorCount || 0}`],

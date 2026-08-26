@@ -44,6 +44,7 @@ export function Navbar({ view, setView, toggleTheme, theme, onSearch }: NavbarPr
 
       <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
         <NavButton label="Explorer" active={view === 'explorer' || view === 'home'} onClick={() => navigate('explorer')} />
+        <NavButton label="Library" active={view === 'library'} onClick={() => navigate('library')} />
         <NavButton label="Academy" active={view === 'academy'} onClick={() => navigate('academy')} />
         <NavButton label="Periodic Table" active={view === 'table'} onClick={() => navigate('table')} />
         <NavButton label="Quiz" active={view === 'quiz'} onClick={() => navigate('quiz')} />
@@ -77,6 +78,7 @@ export function Navbar({ view, setView, toggleTheme, theme, onSearch }: NavbarPr
           >
             <div className="p-4 flex flex-col gap-2">
               <MobileNavItem label="Home" icon={<HomeIcon size={18} />} active={view === 'home'} onClick={() => navigate('home')} />
+              <MobileNavItem label="Library" icon={<FlaskConical size={18} />} active={view === 'library'} onClick={() => navigate('library')} />
               <MobileNavItem label="Academy" icon={<GraduationCap size={18} />} active={view === 'academy'} onClick={() => navigate('academy')} />
               <MobileNavItem label="Explorer" icon={<FlaskConical size={18} />} active={view === 'explorer'} onClick={() => navigate('explorer')} />
               <MobileNavItem label="Periodic Table" icon={<Table size={18} />} active={view === 'table'} onClick={() => navigate('table')} />

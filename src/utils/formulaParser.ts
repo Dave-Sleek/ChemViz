@@ -2,9 +2,11 @@
 // Supports subscripts, parentheses like Al2(SO4)3, (NH4)2SO4
 
 export function parseFormula(formula: string): { symbol: string; count: number }[] {
+  if (!formula || typeof formula !== 'string') return [];
   const result: Record<string, number> = {};
   
   function parse(f: string, multiplier: number = 1) {
+    if (!f) return;
     let i = 0;
     while (i < f.length) {
       if (f[i] === '(') {
@@ -54,6 +56,7 @@ export function parseFormula(formula: string): { symbol: string; count: number }
 }
 
 export function formatFormula(formula: string): string {
+  if (!formula || typeof formula !== 'string') return '';
   // Replace numbers with subscripts
   return formula.replace(/[0-9]+/g, (match) => {
     return match.split('').map(digit => {

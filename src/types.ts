@@ -50,4 +50,4 @@ export interface ConformerData {
   }[];
 }
 
-export type ViewType = 'home' | 'explorer' | 'table' | 'quiz' | 'favorites' | 'help' | 'about' | 'academy';
+export type ViewType = 'home' | 'explorer' | 'table' | 'quiz' | 'favorites' | 'help' | 'about' | 'academy' | 'library';
