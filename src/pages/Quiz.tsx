@@ -55,6 +55,111 @@ const QUESTIONS: Question[] = [
     options: ["18.0 g/mol", "28.0 g/mol", "44.0 g/mol", "58.5 g/mol"],
     correct: 2,
     explanation: "Carbon (12.0) + 2 × Oxygen (16.0) = 44.0 g/mol."
+  },
+  {
+    id: 6,
+    text: "Which of these is the strongest acid?",
+    options: ["CH3COOH", "HCl", "NH3", "H2O"],
+    correct: 1,
+    explanation: "Hydrochloric acid (HCl) is a strong mineral acid that completely dissociates in water."
+  },
+  {
+    id: 7,
+    text: "What functional group is characteristic of alcohols?",
+    options: ["-COOH", "-CHO", "-OH", "-NH2"],
+    correct: 2,
+    explanation: "Alcohols contain the hydroxyl (-OH) functional group."
+  },
+  {
+    id: 8,
+    text: "What is the oxidation state of Oxygen in H2O2?",
+    options: ["-2", "-1", "0", "+1"],
+    correct: 1,
+    explanation: "In peroxides like H2O2, oxygen has an unusual oxidation state of -1."
+  },
+  {
+    id: 9,
+    text: "Which gas is known as 'Laughing Gas'?",
+    options: ["NO2", "N2O", "NO", "NH3"],
+    correct: 1,
+    explanation: "Nitrous oxide (N2O) is used in dentistry and surgery for its anesthetic and analgesic effects."
+  },
+  {
+    id: 10,
+    text: "What is the shape of a CH4 (Methane) molecule?",
+    options: ["Linear", "Bent", "Tetrahedral", "Trigonal Planar"],
+    correct: 2,
+    explanation: "Methane has a tetrahedral geometry due to sp3 hybridization of the central carbon atom."
+  },
+  {
+    id: 11,
+    text: "Who developed the first widely recognized Periodic Table?",
+    options: ["Newton", "Mendeleev", "Dalton", "Bohr"],
+    correct: 1,
+    explanation: "Dmitri Mendeleev published the first periodic table in 1869, arranging elements by atomic mass."
+  },
+  {
+    id: 12,
+    text: "Which of these elements is a liquid at room temperature?",
+    options: ["Mercury", "Gallium", "Iron", "Copper"],
+    correct: 0,
+    explanation: "Mercury (Hg) is the only metal that is liquid at standard room temperature."
+  },
+  {
+    id: 13,
+    text: "What is the main component of natural gas?",
+    options: ["Ethane", "Propane", "Methane", "Butane"],
+    correct: 2,
+    explanation: "Natural gas is primarily composed of methane (CH4)."
+  },
+  {
+    id: 14,
+    text: "In a solution, the substance being dissolved is called the:",
+    options: ["Solvent", "Solute", "Suspension", "Colloid"],
+    correct: 1,
+    explanation: "The solute is the substance that is dissolved in the solvent to form a solution."
+  },
+  {
+    id: 15,
+    text: "What is the pH of a neutral solution at 25°C?",
+    options: ["0", "1", "7", "14"],
+    correct: 2,
+    explanation: "A pH of 7 indicates a neutral solution where [H+] = [OH-]."
+  },
+  {
+    id: 16,
+    text: "Which law states P1V1 = P2V2?",
+    options: ["Charles's Law", "Boyle's Law", "Avogadro's Law", "Gay-Lussac's Law"],
+    correct: 1,
+    explanation: "Boyle's Law describes the inverse relationship between pressure and volume of a gas."
+  },
+  {
+    id: 17,
+    text: "What is the most abundant element in the Earth's atmosphere?",
+    options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Argon"],
+    correct: 2,
+    explanation: "Nitrogen makes up approximately 78% of Earth's atmosphere."
+  },
+  {
+    id: 18,
+    text: "Which particle is responsible for electricity in metals?",
+    options: ["Protons", "Neutrons", "Electrons", "Positrons"],
+    correct: 2,
+    explanation: "Delocalized valence electrons form a 'sea' that allows for electrical conductivity in metals."
+  },
+  {
+    id: 19,
+    text: "What is the process of a liquid turning into a solid called?",
+    options: ["Melting", "Freezing", "Evaporation", "Condensation"],
+    correct: 1,
+    explanation: "Freezing (or solidification) is the phase transition from liquid to solid."
+  },
+  {
+    id: 20,
+    text: "Which element has the symbol 'Ag'?",
+    options: ["Gold", "Silver", "Aluminum", "Argon"],
+    correct: 1,
+    explanation: "Ag comes from the Latin word 'Argentum', which means silver."
   }
 ];
 

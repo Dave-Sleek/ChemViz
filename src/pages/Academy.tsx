@@ -11,7 +11,12 @@ import {
   ArrowLeft,
   GraduationCap,
   Sparkles,
-  Lightbulb
+  Lightbulb,
+  Database,
+  Scale,
+  Flame,
+  Network,
+  Binary
 } from 'lucide-react';
 
 interface Lesson {
@@ -219,14 +224,225 @@ const LESSONS: Lesson[] = [
         answer: 2
       }
     ]
+  },
+  {
+    id: 'stoichiometry',
+    title: 'Stoichiometry',
+    category: 'Intermediate',
+    duration: '22 min',
+    icon: <BookOpen size={20} />,
+    description: 'Learn the quantitative relationships between reactants and products in chemical reactions.',
+    content: [
+      {
+        heading: 'The Mole Concept',
+        text: 'The mole is the unit of measurement for amount of substance in the SI system. One mole contains exactly 6.02214076×10²³ particles.',
+        highlights: ['Avogadro\'s number', 'Molar mass conversion', 'Balanced equations']
+      },
+      {
+        heading: 'Limiting Reactants',
+        text: 'The limiting reactant is the substance that is totally consumed when the chemical reaction is complete.',
+        highlights: ['Theoretical yield', 'Percent yield', 'Excess reactants']
+      }
+    ],
+    questions: [
+      {
+        question: "How many particles are in one mole of a substance?",
+        options: ["6.02 x 10^23", "3.01 x 10^23", "1.20 x 10^24", "10^10"],
+        answer: 0
+      }
+    ]
+  },
+  {
+    id: 'solutions',
+    title: 'Solutions & Concentration',
+    category: 'Intermediate',
+    duration: '18 min',
+    icon: <FlaskConical size={20} />,
+    description: 'Explore the properties of mixtures and how to calculate solution concentrations.',
+    content: [
+      {
+        heading: 'Molarity and Molality',
+        text: 'Concentration is the amount of solute dissolved in a specific amount of solvent or solution.',
+        highlights: ['Molarity (M) = mol/L', 'Dilution (M1V1 = M2V2)', 'Solubility limits']
+      }
+    ],
+    questions: [
+      {
+        question: "What is the unit of Molarity?",
+        options: ["Grams/Liter", "Moles/Kilogram", "Moles/Liter", "Milliliters/Gram"],
+        answer: 2
+      }
+    ]
+  },
+  {
+    id: 'electrochemistry',
+    title: 'Electrochemistry',
+    category: 'Advanced',
+    duration: '28 min',
+    icon: <Zap size={20} />,
+    description: 'Study the relationship between electrical energy and chemical change.',
+    content: [
+      {
+        heading: 'Redox Reactions',
+        text: 'Electrochemistry deals with chemical reactions that involve the transfer of electrons (Reduction-Oxidation).',
+        highlights: ['Oxidation (loss of e-)', 'Reduction (gain of e-)', 'Galvanic cells']
+      }
+    ],
+    questions: [
+      {
+        question: "In a redox reaction, 'Reduction' refers to:",
+        options: ["Loss of electrons", "Gain of electrons", "Loss of protons", "Increase in mass"],
+        answer: 1
+      }
+    ]
+  },
+  {
+    id: 'nuclear-chem',
+    title: 'Nuclear Chemistry',
+    category: 'Advanced',
+    duration: '25 min',
+    icon: <Atom size={20} />,
+    description: 'Delve into the reactions involving changes in the atomic nucleus.',
+    content: [
+      {
+        heading: 'Radioactivity and Decay',
+        text: 'Nuclear chemistry studies radioactive elements and nuclear processes like fission and fusion.',
+        highlights: ['Alpha, Beta, Gamma decay', 'Half-life calculations', 'Fission vs Fusion']
+      }
+    ],
+    questions: [
+      {
+        question: "Which type of nuclear radiation has the highest penetrating power?",
+        options: ["Alpha particles", "Beta particles", "Gamma rays", "Protons"],
+        answer: 2
+      }
+    ]
+  },
+  {
+    id: 'matter-props',
+    title: 'Properties of Matter',
+    category: 'Novice',
+    duration: '15 min',
+    icon: <Database size={20} />,
+    description: 'Understand the fundamental states of matter and their physical properties.',
+    content: [
+      {
+        heading: 'States of Matter',
+        text: 'Matter exists primarily in four states: solid, liquid, gas, and plasma. Each state is defined by the arrangement and energy of its particles.',
+        highlights: ['Phase changes', 'Density & Buoyancy', 'Kinetic Molecular Theory']
+      }
+    ],
+    questions: [
+      {
+        question: "Which state of matter has a definite volume but no definite shape?",
+        options: ["Solid", "Liquid", "Gas", "Plasma"],
+        answer: 1
+      }
+    ]
+  },
+  {
+    id: 'equilibrium',
+    title: 'Chemical Equilibrium',
+    category: 'Intermediate',
+    duration: '24 min',
+    icon: <Scale size={20} />,
+    description: 'Explore reversible reactions and how systems balance under stress.',
+    content: [
+      {
+        heading: 'Le Chatelier\'s Principle',
+        text: 'When a system at equilibrium is subjected to change in concentration, temperature, or pressure, the system shifts to counteract the change.',
+        highlights: ['Equilibrium Constant (Kc)', 'Reaction Quotient (Q)', 'Shift direction']
+      }
+    ],
+    questions: [
+      {
+        question: "If you increase the concentration of a reactant, the equilibrium will shift towards:",
+        options: ["The reactants", "The products", "No change", "It depends on pressure"],
+        answer: 1
+      }
+    ]
+  },
+  {
+    id: 'thermodynamics',
+    title: 'Thermodynamics',
+    category: 'Intermediate',
+    duration: '30 min',
+    icon: <Flame size={20} />,
+    description: 'The study of heat, energy, and the spontaneity of chemical processes.',
+    content: [
+      {
+        heading: 'Enthalpy and Entropy',
+        text: 'Thermodynamics helps us predict if a reaction will occur spontaneously using Gibbs Free Energy.',
+        highlights: ['First Law of Thermo', 'Exothermic vs Endothermic', 'Entropy (Disorder)']
+      }
+    ],
+    questions: [
+      {
+        question: "A reaction that releases heat to the surroundings is called:",
+        options: ["Endothermic", "Exothermic", "Isothermal", "Spontaneous"],
+        answer: 1
+      }
+    ]
+  },
+  {
+    id: 'organic-mechanisms',
+    title: 'Organic Mechanisms',
+    category: 'Advanced',
+    duration: '35 min',
+    icon: <Network size={20} />,
+    description: 'Master the step-by-step electron movements in organic reactions.',
+    content: [
+      {
+        heading: 'Nucleophilic Substitution',
+        text: 'Understanding how nucleophiles replace leaving groups is fundamental to synthetic organic chemistry.',
+        highlights: ['SN1 vs SN2', 'Carbocation stability', 'Transition states']
+      }
+    ],
+    questions: [
+      {
+        question: "Which mechanism typically involves a two-step process with a carbocation intermediate?",
+        options: ["SN1", "SN2", "E2", "Addition"],
+        answer: 0
+      }
+    ]
+  },
+  {
+    id: 'analytical-chem',
+    title: 'Analytical Techniques',
+    category: 'Advanced',
+    duration: '40 min',
+    icon: <Binary size={20} />,
+    description: 'Learn the advanced methods used to identify and quantify chemical substances.',
+    content: [
+      {
+        heading: 'Spectroscopy',
+        text: 'Analytical chemistry uses electromagnetic radiation to probe the structure and concentration of matter.',
+        highlights: ['NMR Spectroscopy', 'Mass Spectrometry', 'Chromatography']
+      }
+    ],
+    questions: [
+      {
+        question: "Which technique is best for determining the molecular mass of a compound?",
+        options: ["UV-Vis", "NMR", "Mass Spectrometry", "Titration"],
+        answer: 2
+      }
+    ]
   }
 ];
 
 export function Academy() {
+  const [selectedLevel, setSelectedLevel] = useState<'Novice' | 'Intermediate' | 'Advanced'>('Novice');
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [quizMode, setQuizMode] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState<string[]>([]);
+
+  // Filter lessons based on selected level
+  // Note: Foundations maps to Novice
+  const filteredLessons = LESSONS.filter(lesson => {
+    if (selectedLevel === 'Novice') return lesson.category === 'Foundations' || lesson.category === 'Novice';
+    return lesson.category === selectedLevel;
+  });
 
   const handleComplete = (lessonId: string) => {
     if (!completed.includes(lessonId)) {
@@ -237,6 +453,8 @@ export function Academy() {
     setScore(0);
   };
 
+  const levels: ('Novice' | 'Intermediate' | 'Advanced')[] = ['Novice', 'Intermediate', 'Advanced'];
+
   return (
     <div className="min-h-full bg-white dark:bg-[#0B0E14] transition-colors duration-300">
       {!selectedLesson ? (
@@ -246,13 +464,38 @@ export function Academy() {
           className="p-8 max-w-6xl mx-auto"
         >
           <header className="mb-12">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-blue-500/10 text-blue-500 rounded-2xl border border-blue-500/20">
-                <GraduationCap size={32} />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-blue-500/10 text-blue-500 rounded-2xl border border-blue-500/20">
+                  <GraduationCap size={32} />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Chemistry Academy</h1>
+                  <p className="text-slate-500 dark:text-slate-400 font-medium">Master the elements through structured scientific modules.</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Chemistry Academy</h1>
-                <p className="text-slate-500 dark:text-slate-400 font-medium">Master the elements through structured scientific modules.</p>
+
+              <div className="flex bg-slate-100 dark:bg-[#161B22] p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                {levels.map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => setSelectedLevel(level)}
+                    className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all relative ${
+                      selectedLevel === level 
+                        ? 'text-white' 
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {selectedLevel === level && (
+                      <motion.div
+                        layoutId="activeLevel"
+                        className="absolute inset-0 bg-blue-600 rounded-xl"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                    <span className="relative z-10">{level}</span>
+                  </button>
+                ))}
               </div>
             </div>
             
@@ -262,62 +505,83 @@ export function Academy() {
                 <p className="text-xl font-black text-slate-900 dark:text-white">Explorer Account</p>
               </div>
               <div className="bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 p-4 rounded-2xl">
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Modules Completed</p>
-                <p className="text-xl font-black text-slate-900 dark:text-white">{completed.length} / {LESSONS.length}</p>
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Level Progress</p>
+                <p className="text-xl font-black text-slate-900 dark:text-white">
+                  {completed.filter(id => LESSONS.find(l => l.id === id)?.category === (selectedLevel === 'Novice' ? 'Foundations' : selectedLevel)).length} / {filteredLessons.length}
+                </p>
               </div>
               <div className="bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 p-4 rounded-2xl">
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Academy Level</p>
-                <p className="text-xl font-black text-blue-600 dark:text-blue-500">{completed.length === LESSONS.length ? 'Scientist' : 'Novice'}</p>
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">Academy Standing</p>
+                <p className="text-xl font-black text-blue-600 dark:text-blue-500">{selectedLevel}</p>
               </div>
             </div>
           </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {LESSONS.map((lesson, idx) => (
-              <motion.div
-                key={lesson.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                onClick={() => setSelectedLesson(lesson)}
-                className="group relative bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-8 cursor-pointer hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 p-8 text-blue-500/5 group-hover:text-blue-500/10 transition-colors">
-                  {lesson.icon}
-                </div>
-                
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-slate-50 dark:bg-[#0B0E14] border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                    {lesson.icon}
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{lesson.category}</span>
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight">{lesson.title}</h3>
-                  </div>
-                </div>
-
-                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">{lesson.description}</p>
-
-                <div className="flex items-center justify-between mt-auto pt-6 border-t border-slate-100 dark:border-slate-800/50">
-                  <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-xs font-bold">
-                    <Zap size={14} className="text-amber-500" />
-                    {lesson.duration}
-                  </div>
-                  {completed.includes(lesson.id) ? (
-                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-500 text-xs font-black">
-                      <CheckCircle2 size={16} />
-                      COMPLETED
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={selectedLevel}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+              {filteredLessons.length > 0 ? (
+                filteredLessons.map((lesson, idx) => (
+                  <motion.div
+                    key={lesson.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.05 }}
+                    onClick={() => setSelectedLesson(lesson)}
+                    className="group relative bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-8 cursor-pointer hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 p-8 text-blue-500/5 group-hover:text-blue-500/10 transition-colors">
+                      {lesson.icon}
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-blue-600 dark:text-blue-500 text-xs font-black">
-                      START MODULE
-                      <ChevronRight size={16} />
+                    
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 bg-slate-50 dark:bg-[#0B0E14] border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                        {lesson.icon}
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{lesson.category}</span>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight">{lesson.title}</h3>
+                      </div>
                     </div>
-                  )}
+
+                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">{lesson.description}</p>
+
+                    <div className="flex items-center justify-between mt-auto pt-6 border-t border-slate-100 dark:border-slate-800/50">
+                      <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-xs font-bold">
+                        <Zap size={14} className="text-amber-500" />
+                        {lesson.duration}
+                      </div>
+                      {completed.includes(lesson.id) ? (
+                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-500 text-xs font-black">
+                          <CheckCircle2 size={16} />
+                          COMPLETED
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-blue-600 dark:text-blue-500 text-xs font-black">
+                          START MODULE
+                          <ChevronRight size={16} />
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="col-span-full py-24 text-center">
+                  <div className="w-20 h-20 bg-slate-100 dark:bg-[#161B22] rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-400">
+                    <BookOpen size={40} />
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">No Modules Found</h3>
+                  <p className="text-slate-500 dark:text-slate-400">We're still developing modules for the {selectedLevel} level.</p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </motion.div>
       ) : (
         <motion.div 
